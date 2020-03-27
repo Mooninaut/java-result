@@ -1,14 +1,12 @@
-package src.io.github.mooninaut.result;
+package io.github.mooninaut.result;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static src.io.github.mooninaut.result.ExceptionalFunctionWrapper.wrapFunction;
-
 /*
- * AcceptedResult.java
+ * RejectedResult.java
  * Copyright 2020 Clement Cherlin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,24 +22,25 @@ import static src.io.github.mooninaut.result.ExceptionalFunctionWrapper.wrapFunc
  * limitations under the License.
  */
 
-final class AcceptedResult<VAL, ERR extends Throwable> implements Result<VAL, ERR> {
+final class RejectedResult<VAL, ERR extends Throwable> implements Result<VAL, ERR> {
     ////// Fields //////
-    private final VAL value;
+    private final ERR throwable;
 
-    ////// Constructors ///////
-    AcceptedResult(VAL value) {
-        this.value = value;
+    ////// Constructor ///////
+
+    RejectedResult(ERR throwable) {
+        this.throwable = throwable;
     }
 
     ////// Public methods ///////
     @Override
     public boolean isAccepted() {
-        return true;
+        return false;
     }
 
     @Override
     public boolean isPresent() {
-        return value != null;
+        return false;
     }
 
     @Override
@@ -51,18 +50,17 @@ final class AcceptedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
 
     @Override
     public boolean isRejected() {
-        return false;
+        return true;
     }
 
     @Override
     public Optional<Class<?>> getValueType() {
-        return Optional.of(value.getClass());
+        return Optional.empty();
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <OUT> Result<OUT, ERR> checkedCast(Class<OUT> type) throws ClassCastException {
-        type.cast(get());
+    public <OUT> Result<OUT, ERR> checkedCast(Class<OUT> type) {
         return (Result<OUT, ERR>) this;
     }
 
@@ -74,122 +72,99 @@ final class AcceptedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
 
     @Override
     public VAL get() {
-        return value;
+        throw new IllegalStateException("Cannot get throwable from rejected Result");
     }
 
     @Override
     public ERR getException() {
-        throw new IllegalStateException("Cannot get exception from accepted Result");
+        return throwable;
     }
 
     @Override
     public VAL orElse(VAL other) {
-        return value;
+        return other;
     }
 
     @Override
-    public VAL orElseThrow() {
-        return value;
+    public VAL orElseThrow() throws ERR {
+        throw throwable;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, OUTERR>>
     Result<OUT, Throwable> map(EF mapper) {
-        return (Result<OUT, Throwable>) wrapFunction(mapper).apply(get());
+        return (Result<OUT, Throwable>) this;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <OUT, F extends Function<? super VAL, ? extends OUT>>
     Result<OUT, ERR> map(F mapper) {
-        return Result.accept(mapper.apply(get()));
+        return (Result<OUT, ERR>) this;
     }
 
     @Override
-    public Optional<VAL> toOptional() throws NullPointerException {
-        return Optional.of(get());
-
+    public Optional<VAL> toOptional() {
+        return Optional.empty();
     }
 
     @Override
     public Optional<VAL> toNullableOptional() {
-        return Optional.of(get());
+        return Optional.empty();
     }
 
     @Override
     public VAL orElseThrowRuntime() {
-        return value;
+        throw new RuntimeException(throwable);
     }
 
     @Override
-    public void throwIfRejected() { }
+    public void throwIfRejected() throws ERR {
+        throw throwable;
+    }
 
     @Override
-    public void throwRuntimeIfRejected() { }
+    public void throwRuntimeIfRejected() throws RuntimeException {
+        throw new RuntimeException(throwable);
+    }
 
     @Override
     public Result<VAL, ERR> accept(Consumer<? super VAL> consumer) {
-        if (isAccepted()) {
-            consumer.accept(get());
-        }
         return this;
     }
 
     @Override
     public Result<VAL, ERR> reject(Consumer<? super ERR> rejector) {
-        if (isRejected()) {
-            rejector.accept(getException());
-        }
+        rejector.accept(throwable);
         return this;
     }
 
     @Override
     public Result<VAL, ERR> then(Consumer<? super VAL> consumer, Consumer<? super ERR> rejector) {
-        if (isAccepted()) {
-            consumer.accept(get());
-        } else {
-            rejector.accept(getException());
-        }
+        rejector.accept(throwable);
         return this;
     }
     @Override
     public Result<VAL, ERR> acceptOrElse(Consumer<? super VAL> consumer, VAL other) {
-        if (isAccepted()) {
-            consumer.accept(get());
-        } else {
-            consumer.accept(other);
-        }
+        consumer.accept(other);
         return this;
     }
     @Override
     public Result<VAL, ERR> acceptOrElseThrow(Consumer<? super VAL> consumer) throws ERR {
-        if (isRejected()) {
-            throw getException();
-        }
-        consumer.accept(get());
-        return this;
+        throw throwable;
     }
     @Override
     public Result<VAL, ERR> acceptOrElseThrowRuntime(Consumer<? super VAL> consumer) {
-        if (isRejected()) {
-            throw new RuntimeException(getException());
-        }
-        consumer.accept(get());
-        return this;
+        throw new RuntimeException(throwable);
     }
     @Override
     public Result<VAL, ERR> acceptOrPrintStacktrace(Consumer<? super VAL> consumer) {
-        if (isAccepted()) {
-            consumer.accept(get());
-        } else {
-            getException().printStackTrace();
-        }
+        throwable.printStackTrace();
         return this;
     }
 
     ////// Object overrides //////
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -198,18 +173,17 @@ final class AcceptedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        AcceptedResult<?, ?> otherResult = (AcceptedResult<?, ?>) o;
-        return Objects.equals(value, otherResult.value);
+        RejectedResult<?, ?> otherResult = (RejectedResult<?, ?>) o;
+        return throwable == otherResult.throwable;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value);
+        return Objects.hash(throwable);
     }
 
     @Override
     public String toString() {
-        return "Result: " + (isAccepted() ? "accepted" : "rejected") + ", " + value;
+        return "Result: rejected, " + throwable;
     }
-
 }

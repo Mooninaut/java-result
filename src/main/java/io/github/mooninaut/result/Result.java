@@ -1,4 +1,4 @@
-package src.io.github.mooninaut.result;
+package io.github.mooninaut.result;
 
 import java.util.Collection;
 import java.util.Objects;

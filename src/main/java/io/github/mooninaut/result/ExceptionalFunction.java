@@ -1,4 +1,4 @@
-package src.io.github.mooninaut.result;
+package io.github.mooninaut.result;
 
 /*
  * ExceptionalFunction.java
