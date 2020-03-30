@@ -26,3 +26,8 @@ hs_err_pid*
 *.iml
 out
 gen
+
+# Miscellaneous
+.DS_Store
+Thumbs.db
+[Dd]esktop.ini
