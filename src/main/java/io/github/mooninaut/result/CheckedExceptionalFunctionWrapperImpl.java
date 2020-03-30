@@ -3,7 +3,7 @@ package io.github.mooninaut.result;
 import java.util.Objects;
 
 /*
- * CheckedExceptionalFunctionWrapper.java
+ * CheckedExceptionalFunctionWrapperImpl.java
  * Copyright 2020 Clement Cherlin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,12 +19,12 @@ import java.util.Objects;
  * limitations under the License.
  */
 
-public class CheckedExceptionalFunctionWrapper<IN, OUT, ERR extends Throwable> extends
+public class CheckedExceptionalFunctionWrapperImpl<IN, OUT, ERR extends Throwable> extends
         ExceptionalFunctionWrapperImpl<IN, OUT, ERR> {
     private final Class<IN> inClass;
     private final Class<OUT> outClass;
     private final Class<ERR> errClass;
-    CheckedExceptionalFunctionWrapper(
+    CheckedExceptionalFunctionWrapperImpl(
             ExceptionalFunction<? super IN, ? extends OUT, ? extends ERR> ef,
             Class<IN> inClass,
             Class<OUT> outClass,
@@ -35,23 +35,18 @@ public class CheckedExceptionalFunctionWrapper<IN, OUT, ERR extends Throwable> e
         this.errClass = Objects.requireNonNull(errClass);
     }
 
-    public static <IN, OUT, ERR extends Throwable>
-    CheckedExceptionalFunctionWrapper<IN, OUT, ERR>
-    wrapFunctionChecked(
-            ExceptionalFunction<? super IN, ? extends OUT, ? extends ERR> ef,
-            Class<IN> inClass,
-            Class<OUT> outClass,
-            Class<ERR> errClass) {
-        return new CheckedExceptionalFunctionWrapper<>(ef, inClass, outClass, errClass);
-    }
-
     @Override
     public Result<OUT, ERR> apply(IN in) throws ClassCastException {
-        try {
-            return Result.accept(outClass.cast(super.apply(inClass.cast(in))));
-        } catch (Throwable ex) {
-            return Result.reject(errClass.cast(ex));
+        Result<OUT, ERR> result = super.apply(inClass.cast(in));
+
+        if (result.isAccepted()) {
+            return result.checkedCast(outClass);
         }
+
+        System.err.println("Attempting to cast " + result + " to " + errClass);
+        errClass.cast(result.getException());
+
+        return result;
     }
 
     public Class<IN> getInClass() {
@@ -77,7 +72,7 @@ public class CheckedExceptionalFunctionWrapper<IN, OUT, ERR extends Throwable> e
         if (!super.equals(o)) {
             return false;
         }
-        CheckedExceptionalFunctionWrapper<?, ?, ?> that = (CheckedExceptionalFunctionWrapper<?, ?, ?>) o;
+        CheckedExceptionalFunctionWrapperImpl<?, ?, ?> that = (CheckedExceptionalFunctionWrapperImpl<?, ?, ?>) o;
         return getInClass().equals(that.getInClass()) &&
                 getOutClass().equals(that.getOutClass()) &&
                 getErrClass().equals(that.getErrClass());

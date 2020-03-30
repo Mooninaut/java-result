@@ -72,7 +72,7 @@ final class RejectedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
 
     @Override
     public VAL get() {
-        throw new IllegalStateException("Cannot get throwable from rejected Result");
+        throw new IllegalStateException("Cannot get value from rejected Result");
     }
 
     @Override
@@ -92,8 +92,15 @@ final class RejectedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
 
     @Override
     @SuppressWarnings("unchecked")
-    public <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, OUTERR>>
-    Result<OUT, Throwable> map(EF mapper) {
+    public <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, ? extends OUTERR>>
+    Result<OUT, Throwable> exMap(EF mapper) {
+        return (Result<OUT, Throwable>) this;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, ? extends OUTERR>>
+    Result<OUT, Throwable> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass, Class<OUTERR> outErrClass) {
         return (Result<OUT, Throwable>) this;
     }
 

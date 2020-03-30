@@ -5,8 +5,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static io.github.mooninaut.result.ExceptionalFunctionWrapper.wrapFunction;
-
 /*
  * EmptyResult.java
  * Copyright 2020 Clement Cherlin
@@ -39,7 +37,7 @@ final class EmptyResult<VAL, ERR extends Throwable> implements Result<VAL, ERR> 
 
     @Override
     public boolean isAccepted() {
-        return false;
+        return true;
     }
 
     @Override
@@ -96,9 +94,18 @@ final class EmptyResult<VAL, ERR extends Throwable> implements Result<VAL, ERR> 
 
     @SuppressWarnings("unchecked")
     @Override
-    public <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, OUTERR>> Result<OUT, Throwable> map(
+    public <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, ? extends OUTERR>>
+    Result<OUT, Throwable> exMap(
             EF mapper) {
-        return (Result<OUT, Throwable>) wrapFunction(mapper).apply(null);
+        return (Result<OUT, Throwable>) ExceptionalFunctionWrapper.wrap(mapper).apply(null);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, ? extends OUTERR>>
+    Result<OUT, Throwable> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass, Class<OUTERR> outErrClass) {
+        return (Result<OUT, Throwable>) ExceptionalFunctionWrapper
+                .wrapChecked(mapper, inClass, outClass, outErrClass);
     }
 
     @Override

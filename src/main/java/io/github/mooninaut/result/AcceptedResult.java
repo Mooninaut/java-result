@@ -5,8 +5,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static io.github.mooninaut.result.ExceptionalFunctionWrapper.wrapFunction;
-
 /*
  * AcceptedResult.java
  * Copyright 2020 Clement Cherlin
@@ -94,9 +92,18 @@ final class AcceptedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
 
     @Override
     @SuppressWarnings("unchecked")
-    public <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, OUTERR>>
-    Result<OUT, Throwable> map(EF mapper) {
-        return (Result<OUT, Throwable>) wrapFunction(mapper).apply(get());
+    public <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, ? extends OUTERR>>
+    Result<OUT, Throwable> exMap(EF mapper) {
+        return (Result<OUT, Throwable>) ExceptionalFunctionWrapper.wrap(mapper).apply(get());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, ? extends OUTERR>>
+    Result<OUT, Throwable> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass, Class<OUTERR> outErrClass) {
+        return (Result<OUT, Throwable>) ExceptionalFunctionWrapper.wrapChecked(
+                mapper, inClass, outClass, outErrClass
+        ).apply(get());
     }
 
     @Override

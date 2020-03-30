@@ -31,8 +31,9 @@ public class ExceptionalFunctionWrapperImpl<IN, OUT, ERR extends Throwable> impl
     @Override
     public Result<OUT, ERR> apply(IN in) {
         try {
-            return new AcceptedResult<>(ef.apply(in));
+            return Result.accept(ef.apply(in));
         } catch (Throwable ex) {
+            ExceptionalFunction.throwIfUnchecked(ex);
             return new RejectedResult<>((ERR) ex);
         }
     }

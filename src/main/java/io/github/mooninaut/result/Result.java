@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  */
 
 /**
- * A Result type that contains, if accepted, a result of type {@code <VAL>} or {@code null},
+ * A Result type that contains, if accepted, a result of type {@code <IN>} or {@code null},
  * or if rejected, a Throwable of type {@code <ERR>}.
  * @param <VAL> The type of the included value, if present.
  * @param <ERR> The type of the included Throwable, if present.
@@ -40,7 +40,7 @@ public interface Result<VAL, ERR extends Throwable> {
     }
 
     /**
-     * Creates and returns an accepted Result containing a value, {@code val}, of type {@code <VAL>}.
+     * Creates and returns an accepted Result containing a value, {@code val}, of type {@code <IN>}.
      */
     static <VAL, ERR extends Throwable> Result<VAL, ERR> accept(VAL val) {
         return val == null ? EmptyResult.getInstance() : new AcceptedResult<>(val);
@@ -87,7 +87,7 @@ public interface Result<VAL, ERR extends Throwable> {
 
     /**
      * Create a Result with the supplied value if non-null, or a {@link NullPointerException}.
-     * @param val A value of type {@code <VAL>}.
+     * @param val A value of type {@code <IN>}.
      * @param <VAL> The type of {@code val}.
      * @return A Result containing either a non-null {@code val} or a {@link NullPointerException}.
      */
@@ -100,29 +100,41 @@ public interface Result<VAL, ERR extends Throwable> {
 
     /**
      * Helper to generate lambdas to pass to stream.map() and similar functions
-     * Example use: {@code List<Result<File, IOException>> files = fileNameResultList.stream(Result.mapper(File::open)).collect(Collectors.toList());}
-     * @param exFunc A function from {@code <VAL>} to {@code <OUT>}
-     * @param <VAL> The value type of an existing {@code Result}.
-     * @param <VAL2> The value type of the new {@code Result} returned by the lambda.
+     * Example use:
+     * {@code List<Result<List<String>, IOException>> fileContents = pathList.stream(
+     *     Result.exMapper(path -> Files.readAllLines(path, Charset.defaultCharset()))
+     * ).collect(Collectors.toList());}
+     * @param exFunc A function from {@code <IN>} to {@code <OUT>}
+     * @param <IN> The value type of an existing {@code Result}.
+     * @param <OUT> The value type of the new {@code Result} returned by the lambda.
      * @param <ERR> The type of the exception possibly thrown by the mapping function.
-     * @return A wrapped function that takes {@code Result<VAL, Throwable>} and returns {@code Result<OUT, Throwable>}.
+     * @return A wrapped function that takes {@code Result<IN, Throwable>} and returns {@code Result<OUT, Throwable>}.
      */
-    static <VAL, VAL2, ERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends VAL2, ERR>>
-    Function<Result<VAL, ? extends Throwable>, Result<VAL2, Throwable>> mapper(EF exFunc) {
-        return result -> result.map(exFunc);
+    static <IN, OUT, ERR extends Throwable>
+    Function<Result<IN, ? extends Throwable>, Result<OUT, Throwable>> exMapper(ExceptionalFunction<? super IN, ? extends OUT, ? extends ERR> exFunc) {
+        return result -> result.exMap(exFunc);
+    }
+
+    static <IN, OUT, ERR extends Throwable>
+    Function<Result<IN, ? extends Throwable>, Result<OUT, Throwable>> exMapperChecked(
+            ExceptionalFunction<? super IN, ? extends OUT, ? extends ERR> exFunc,
+            Class<IN> inClass, Class<OUT> outClass, Class<ERR> errClass) {
+        return result -> result.exMapChecked(exFunc, inClass, outClass, errClass);
     }
 
     /**
      * Helper to generate lambdas to pass to stream.map() and similar functions
-     * Example use: {@code List<Result<File, IOException>> files = fileNameResultList.stream(Result.mapper(File::open)).collect(Collectors.toList());}
-     * @param func A function from {@code <VAL>} to {@code <OUT>}
+     * Example use: {@code List<Result<String, IOException>> fileContentStrings = fileContents.stream(
+     *     Result.mapper(listOfStrings -> String.join("\n", listOfStrings))
+     * ).collect(Collectors.toList());}
+     * @param func A function from {@code <IN>} to {@code <OUT>}
      * @param <VAL> The value type of an existing {@code Result}.
      * @param <VAL2> The value type of the new {@code Result} returned by the lambda.
      * @param <ERR> The type of the exception possibly thrown by the mapping function.
-     * @return A wrapped function that takes {@code Result<VAL, Throwable>} and returns {@code Result<OUT, Throwable>}.
+     * @return A wrapped function that takes {@code Result<IN, Throwable>} and returns {@code Result<OUT, Throwable>}.
      */
-    static <VAL, VAL2, ERR extends Throwable, F extends Function<? super VAL, ? extends VAL2>>
-    Function<Result<VAL, ERR>, Result<VAL2, ERR>> mapper(F func) {
+    static <VAL, VAL2, ERR extends Throwable>
+    Function<Result<VAL, ERR>, Result<VAL2, ERR>> mapper(Function<? super VAL, ? extends VAL2> func) {
         return result -> result.map(func);
     }
 
@@ -134,7 +146,7 @@ public interface Result<VAL, ERR extends Throwable> {
     }
 
     /**
-     * Map and filter a Collection of Results to Sstream of just values.
+     * Map and filter a Collection of Results to a Stream of just values.
      */
     static <VAL> Stream<VAL> valueStream(Collection<Result<VAL, ? extends Throwable>> collection) {
         return valueStream(collection.stream());
@@ -219,7 +231,7 @@ public interface Result<VAL, ERR extends Throwable> {
      * If this Result is rejected, acts as a no-op.
      * @param type The class object of the class to checkedCast to.
      * @param <OUT> The class to checkedCast to.
-     * @return {@code this} if {@code <VAL>} can be checkedCast to {@code OUT}.
+     * @return {@code this} if {@code <IN>} can be checkedCast to {@code OUT}.
      */
     <OUT> Result<OUT, ERR> checkedCast(Class<OUT> type) throws ClassCastException;
 
@@ -266,21 +278,24 @@ public interface Result<VAL, ERR extends Throwable> {
     void throwRuntimeIfRejected() throws RuntimeException;
 
     /**
-     * Calls {@code mapper} on VAL and returns either {@code Result<OUT,ERR>} or {@code Result<OUT,OUTERR>},
+     * Calls {@code mapper} on IN and returns either {@code Result<OUT,ERR>} or {@code Result<OUT,OUTERR>},
      * where {@code <OUTERR>} is the exception type thrown by {@code mapper}.
      * Since it cannot be determined at compile time which exception type will be the result, casts both exceptions to Throwable.
      * A run-time type check will be required if the type of the exception is significant.
-     * @param mapper A function mapping from type {@code <VAL>} to type {@code <OUT>}, possibly throwing an exception of type {@code <OUTERR>}
      * @param <OUT> The return type of {@code mapper}.
      * @param <OUTERR> The exception type thrown by {@code mapper}.
+     * @param mapper A function mapping from type {@code <IN>} to type {@code <OUT>}, possibly throwing an exception of type {@code <OUTERR>}
      * @return If this Result accepted, the result of executing {@code mapper} on this Result's value, otherwise {@code this}
      */
-    <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, OUTERR>>
-    Result<OUT, Throwable> map(EF mapper);
+    <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, ? extends OUTERR>>
+    Result<OUT, Throwable> exMap(EF mapper);
+
+    <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, ? extends OUTERR>>
+    Result<OUT, Throwable> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass, Class<OUTERR> outErrClass);
 
     /**
-     * Calls {@code mapper} on VAL and returns {@code Result<OUT,ERR>}
-     * @param mapper A function mapping from type {@code <VAL>} to type {@code <OUT>}
+     * Calls {@code mapper} on IN and returns {@code Result<OUT,ERR>}
+     * @param mapper A function mapping from type {@code <IN>} to type {@code <OUT>}
      * @param <OUT> The return type of {@code mapper}
      * @return If this Result accepted, the Result of executing {@code mapper} on this Result's value, otherwise {@code this}
      */

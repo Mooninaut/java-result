@@ -19,12 +19,23 @@ import java.util.function.Function;
  * limitations under the License.
  */
 
+@FunctionalInterface
 public interface ExceptionalFunctionWrapper<IN, OUT, ERR extends Throwable> extends Function<IN, Result<OUT, ERR>> {
 
     static <IN, OUT, ERR extends Throwable>
     ExceptionalFunctionWrapperImpl<IN, OUT, ERR>
-    wrapFunction(ExceptionalFunction<? super IN, ? extends OUT, ? extends ERR> ef) {
+    wrap(ExceptionalFunction<? super IN, ? extends OUT, ? extends ERR> ef) {
         return new ExceptionalFunctionWrapperImpl<>(ef);
+    }
+
+    static <IN, OUT, ERR extends Throwable>
+    ExceptionalFunctionWrapper<IN, OUT, ERR>
+    wrapChecked(
+            ExceptionalFunction<? super IN, ? extends OUT, ? extends ERR> ef,
+            Class<IN> inClass,
+            Class<OUT> outClass,
+            Class<ERR> errClass) {
+        return new CheckedExceptionalFunctionWrapperImpl<>(ef, inClass, outClass, errClass);
     }
 
     @Override
