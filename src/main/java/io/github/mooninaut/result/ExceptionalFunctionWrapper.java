@@ -19,7 +19,6 @@ import java.util.function.Function;
  * limitations under the License.
  */
 
-@FunctionalInterface
 public interface ExceptionalFunctionWrapper<IN, OUT, ERR extends Throwable> extends Function<IN, Result<OUT, ERR>> {
 
     static <IN, OUT, ERR extends Throwable>

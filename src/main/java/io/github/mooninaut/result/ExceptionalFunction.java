@@ -20,24 +20,5 @@ package io.github.mooninaut.result;
 @FunctionalInterface
 public interface ExceptionalFunction<IN, OUT, ERR extends Throwable> {
 
-    static boolean isCheckedException(Object object) {
-        return (object instanceof Throwable)
-                && !(object instanceof RuntimeException)
-                && !(object instanceof Error);
-    }
-
-    static boolean isUncheckedException(Object object) {
-        return object instanceof RuntimeException || object instanceof Error;
-    }
-
-    static void throwIfUnchecked(Throwable throwable) {
-        if (throwable instanceof Error) {
-            throw (Error) throwable;
-        }
-        if (throwable instanceof RuntimeException) {
-            throw (RuntimeException) throwable;
-        }
-    }
-
     OUT apply(IN argument) throws ERR;
 }
