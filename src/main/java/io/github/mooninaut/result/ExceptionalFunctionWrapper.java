@@ -39,4 +39,6 @@ public interface ExceptionalFunctionWrapper<IN, OUT, ERR extends Throwable> exte
 
     @Override
     Result<OUT, ERR> apply(IN in);
+
+
 }

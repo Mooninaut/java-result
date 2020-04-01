@@ -23,7 +23,7 @@ import java.util.function.Function;
  */
 
 /**
- * A Result type that contains, if accepted, a result of type {@code <IN>} or {@code null},
+ * An immutable Result type that contains, if accepted, a result of type {@code <IN>} or {@code null},
  * or if rejected, a Throwable of type {@code <ERR>}.
  * @param <VAL> The type of the included value, if present.
  * @param <ERR> The type of the included Throwable, if present.
