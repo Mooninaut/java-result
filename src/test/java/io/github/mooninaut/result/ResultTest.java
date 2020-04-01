@@ -26,19 +26,19 @@ public class ResultTest {
     @Test
     public void fileReadTest() {
         List<String> fileNameList = Arrays.asList("files/file1.txt", "files/file2.txt", "files/doesnotexist");
-        SplitStream<String, Throwable> splitStream = Result.splitStream(
+        SplitStream<String, Throwable> splitStream = Results.splitStream(
             Stream.concat(
                 fileNameList.stream()
                     .map(fileName -> ResultTest.class.getClassLoader().getResource(fileName))
                     .map(Result::requireNonNull),
                 Stream.of("badURL").map(ExceptionalFunctionWrapper.wrap(URL::new))
             )
-                .map(Result.exMapperChecked(URL::toURI, URL.class, URI.class, URISyntaxException.class))
-                .map(Result.mapper(Paths::get))
-                .map(Result.exMapper(Files::newBufferedReader))
-                .map(Result.exMapper(BufferedReader::lines))
-                .map(Result.mapper(stream -> stream.collect(Collectors.toList())))
-                .map(Result.mapper(lines -> String.join("\n", lines)))
+                .map(Results.exMapperChecked(URL::toURI, URL.class, URI.class, URISyntaxException.class))
+                .map(Results.mapper(Paths::get))
+                .map(Results.exMapper(Files::newBufferedReader))
+                .map(Results.exMapper(BufferedReader::lines))
+                .map(Results.mapper(stream -> stream.collect(Collectors.toList())))
+                .map(Results.mapper(lines -> String.join("\n", lines)))
         );
 
         List<String> results = splitStream.getValueStream().collect(Collectors.toList());
