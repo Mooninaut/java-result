@@ -67,6 +67,42 @@ public interface Result<VAL, ERR extends Throwable> {
         return new AcceptedResult<>((VAL) o);
     }
 
+    @SuppressWarnings("unchecked")
+    static<VAL, ERR extends Throwable> Result<VAL, ERR> of(ExceptionalSupplier<VAL, ERR> es) {
+        try {
+            return accept(es.get());
+        } catch (Throwable err) {
+            return reject((ERR) err);
+        }
+    }
+
+    /**
+     * Captures the output of exceptionalSupplier in a Result, checking the types of the value or exception as
+     * appropriate.
+     * @param exceptionalSupplier an ExceptionalSupplier.
+     * @param outClass the class to cast the result of calling {@code exceptionalSupplier} to.
+     * @param errClass the class to cast the error thrown by calling {@code exceptionalSupplier} to.
+     * @param <OUT> the type of {@code outClass}.
+     * @param <ERR> the type of {@code errClass}.
+     * @return A {@code Result<OUT, ERR>} containing the result of calling {@code exceptionalSupplier}.
+     */
+    // TODO: If !(err instanceof ERR), should this rethrow err, throw ClassCastException, or return a RejectedResult of ClassCastException?
+    // TODO: I'm almost tempted to return a Result<Result<OUT, ERR>, ClassCastException>
+    // TODO: Is this even useful? When would you use it? Maybe in tests?
+    // TODO: Maybe cast out but not err?
+    static <OUT, ERR extends Throwable> Result<OUT, ERR> ofChecked(
+            ExceptionalSupplier<OUT, ERR> exceptionalSupplier,
+            Class<OUT> outClass,
+            Class<ERR> errClass) throws ClassCastException {
+        OUT out;
+        try {
+            out = exceptionalSupplier.get();
+        } catch (Throwable err) {
+            return reject(errClass.cast(err));
+        }
+        return accept(outClass.cast(out));
+    }
+
     /**
      * Attempts to cast the value {@code in} to the specified class, capturing the value or the {@link ClassCastException} in a Result.
      * @param in A value of type {@code <IN>}.
