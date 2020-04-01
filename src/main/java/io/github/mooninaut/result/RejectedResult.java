@@ -137,12 +137,12 @@ final class RejectedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
     }
 
     @Override
-    public Result<VAL, ERR> accept(Consumer<? super VAL> consumer) {
+    public Result<VAL, ERR> ifAccepted(Consumer<? super VAL> consumer) {
         return this;
     }
 
     @Override
-    public Result<VAL, ERR> reject(Consumer<? super ERR> rejector) {
+    public Result<VAL, ERR> ifRejected(Consumer<? super ERR> rejector) {
         rejector.accept(throwable);
         return this;
     }

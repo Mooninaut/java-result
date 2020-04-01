@@ -42,7 +42,7 @@ final class AcceptedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
 
     @Override
     public boolean isPresent() {
-        return value != null;
+        return true;
     }
 
     @Override
@@ -139,7 +139,7 @@ final class AcceptedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
     public void throwRuntimeIfRejected() { }
 
     @Override
-    public Result<VAL, ERR> accept(Consumer<? super VAL> consumer) {
+    public Result<VAL, ERR> ifAccepted(Consumer<? super VAL> consumer) {
         if (isAccepted()) {
             consumer.accept(get());
         }
@@ -147,7 +147,7 @@ final class AcceptedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
     }
 
     @Override
-    public Result<VAL, ERR> reject(Consumer<? super ERR> rejector) {
+    public Result<VAL, ERR> ifRejected(Consumer<? super ERR> rejector) {
         if (isRejected()) {
             rejector.accept(getException());
         }
@@ -221,5 +221,4 @@ final class AcceptedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
     public String toString() {
         return "Result: " + (isAccepted() ? "accepted" : "rejected") + ", " + value;
     }
-
 }

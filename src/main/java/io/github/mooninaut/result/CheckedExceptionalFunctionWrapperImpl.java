@@ -43,7 +43,6 @@ public class CheckedExceptionalFunctionWrapperImpl<IN, OUT, ERR extends Throwabl
             return result.checkedCast(outClass);
         }
 
-        System.err.println("Attempting to cast " + result + " to " + errClass);
         errClass.cast(result.getException());
 
         return result;

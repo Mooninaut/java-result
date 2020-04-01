@@ -135,13 +135,13 @@ final class EmptyResult<VAL, ERR extends Throwable> implements Result<VAL, ERR> 
     public void throwRuntimeIfRejected() throws RuntimeException { }
 
     @Override
-    public Result<VAL, ERR> accept(Consumer<? super VAL> consumer) {
+    public Result<VAL, ERR> ifAccepted(Consumer<? super VAL> consumer) {
         consumer.accept(null);
         return this;
     }
 
     @Override
-    public Result<VAL, ERR> reject(Consumer<? super ERR> rejector) {
+    public Result<VAL, ERR> ifRejected(Consumer<? super ERR> rejector) {
         return this;
     }
 

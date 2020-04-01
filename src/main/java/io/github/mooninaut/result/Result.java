@@ -1,11 +1,9 @@
 package io.github.mooninaut.result;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 /*
  * Result.java
@@ -59,7 +57,7 @@ public interface Result<VAL, ERR extends Throwable> {
      * Otherwise, an accepted Result.
      */
     @SuppressWarnings("unchecked")
-    static <VAL, ERR extends Throwable> Result<VAL, ERR> of(Object o) {
+    static <VAL, ERR extends Throwable> Result<VAL, ERR> from(Object o) {
         if (o == null) {
             return EmptyResult.getInstance();
         }
@@ -79,7 +77,7 @@ public interface Result<VAL, ERR extends Throwable> {
      */
     static <IN, OUT> Result<OUT, ClassCastException> safeCast(IN in, Class<OUT> outClass) {
         try {
-            return new AcceptedResult<>(outClass.cast(in));
+            return accept(outClass.cast(in));
         } catch (ClassCastException cce) {
             return new RejectedResult<>(cce);
         }
@@ -320,13 +318,13 @@ public interface Result<VAL, ERR extends Throwable> {
      * If this Result is accepted, feed the included value to the supplied {@link Consumer}, otherwise, do nothing.
      * Chainable.
      */
-    Result<VAL, ERR> accept(Consumer<? super VAL> consumer);
+    Result<VAL, ERR> ifAccepted(Consumer<? super VAL> consumer);
 
     /**
      * If this Result is rejected, feed the included {@link Throwable} to the supplied {@link Consumer}, otherwise, do nothing.
      * Chainable.
      */
-    Result<VAL, ERR> reject(Consumer<? super ERR> rejector);
+    Result<VAL, ERR> ifRejected(Consumer<? super ERR> rejector);
 
     /**
      * Feed this Result's value or {@link Throwable} to the appropriate {@link Consumer}.
