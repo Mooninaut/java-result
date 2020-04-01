@@ -28,6 +28,9 @@ final class AcceptedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
 
     ////// Constructors ///////
     AcceptedResult(VAL value) {
+        if (value == null) {
+            throw new NullPointerException("AcceptedResult does not allow null values");
+        }
         this.value = value;
     }
 
