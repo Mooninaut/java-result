@@ -36,8 +36,8 @@ public class CheckedExceptionalFunctionWrapperImpl<IN, OUT, ERR extends Throwabl
     }
 
     @Override
-    public Result<OUT, ERR> apply(IN in) throws ClassCastException {
-        Result<OUT, ERR> result = super.apply(inClass.cast(in));
+    public Result<OUT> apply(IN in) throws ClassCastException {
+        Result<OUT> result = super.apply(inClass.cast(in));
 
         if (result.isAccepted()) {
             return result.checkedCast(outClass);

@@ -19,7 +19,7 @@ import java.util.function.Function;
  * limitations under the License.
  */
 
-public interface ExceptionalFunctionWrapper<IN, OUT, ERR extends Throwable> extends Function<IN, Result<OUT, ERR>> {
+public interface ExceptionalFunctionWrapper<IN, OUT, ERR extends Throwable> extends Function<IN, Result<OUT>> {
 
     static <IN, OUT, ERR extends Throwable>
     ExceptionalFunctionWrapperImpl<IN, OUT, ERR>
@@ -38,7 +38,7 @@ public interface ExceptionalFunctionWrapper<IN, OUT, ERR extends Throwable> exte
     }
 
     @Override
-    Result<OUT, ERR> apply(IN in);
+    Result<OUT> apply(IN in);
 
 
 }

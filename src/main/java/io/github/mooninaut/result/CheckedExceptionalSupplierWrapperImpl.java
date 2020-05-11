@@ -33,8 +33,8 @@ public class CheckedExceptionalSupplierWrapperImpl<OUT, ERR extends Throwable> e
     }
 
     @Override
-    public Result<OUT, ERR> get() throws ClassCastException {
-        Result<OUT, ERR> result = super.get();
+    public Result<OUT> get() throws ClassCastException {
+        Result<OUT> result = super.get();
 
         if (result.isAccepted()) {
             return result.checkedCast(outClass);

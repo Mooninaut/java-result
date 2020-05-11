@@ -19,7 +19,7 @@ import java.util.function.Supplier;
  * limitations under the License.
  */
 
-public interface ExceptionalSupplierWrapper<OUT, ERR extends Throwable> extends Supplier<Result<OUT, ERR>> {
+public interface ExceptionalSupplierWrapper<OUT, ERR extends Throwable> extends Supplier<Result<OUT>> {
 
     static <OUT, ERR extends Throwable>
     ExceptionalSupplierWrapper<OUT, ERR>
@@ -37,5 +37,5 @@ public interface ExceptionalSupplierWrapper<OUT, ERR extends Throwable> extends 
     }
 
     @Override
-    Result<OUT, ERR> get();
+    Result<OUT> get();
 }

@@ -29,7 +29,7 @@ public class ExceptionalSupplierWrapperImpl<OUT, ERR extends Throwable> implemen
 
     @SuppressWarnings("unchecked")
     @Override
-    public Result<OUT, ERR> get() {
+    public Result<OUT> get() {
         try {
             return Result.accept(es.get());
         } catch (Throwable ex) {

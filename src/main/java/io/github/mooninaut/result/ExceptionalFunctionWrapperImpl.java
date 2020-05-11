@@ -33,7 +33,7 @@ public class ExceptionalFunctionWrapperImpl<IN, OUT, ERR extends Throwable> impl
 
     @SuppressWarnings("unchecked")
     @Override
-    public Result<OUT, ERR> apply(IN in) {
+    public Result<OUT> apply(IN in) {
         try {
             return Result.accept(exceptionalFunction.apply(in));
         } catch (Throwable ex) {

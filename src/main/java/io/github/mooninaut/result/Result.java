@@ -24,30 +24,29 @@ import java.util.function.Function;
 
 /**
  * An immutable Result type that contains, if accepted, a result of type {@code <IN>} or {@code null},
- * or if rejected, a Throwable of type {@code <ERR>}.
+ * or if rejected, a Throwable.
  * @param <VAL> The type of the included value, if present.
- * @param <ERR> The type of the included Throwable, if present.
  */
-public interface Result<VAL, ERR extends Throwable> {
+public interface Result<VAL> {
 
     /**
      * Returns an empty Result. May or may not be a singleton.
      */
-    static <VAL, ERR extends Throwable> Result<VAL, ERR> empty() {
+    static <VAL> Result<VAL> empty() {
         return EmptyResult.getInstance();
     }
 
     /**
      * Creates and returns an accepted Result containing a value, {@code val}, of type {@code <IN>}.
      */
-    static <VAL, ERR extends Throwable> Result<VAL, ERR> accept(VAL val) {
+    static <VAL> Result<VAL> accept(VAL val) {
         return val == null ? EmptyResult.getInstance() : new AcceptedResult<>(val);
     }
 
     /**
      * Creates and returns a rejected Result containing an exception, {@code err}, of type {@code <ERR>}.
      */
-    static <VAL, ERR extends Throwable> Result<VAL, ERR> reject(ERR err) {
+    static <VAL, ERR extends Throwable> Result<VAL> reject(ERR err) {
         return new RejectedResult<>(Objects.requireNonNull(err));
     }
 
@@ -57,7 +56,7 @@ public interface Result<VAL, ERR extends Throwable> {
      * Otherwise, an accepted Result.
      */
     @SuppressWarnings("unchecked")
-    static <VAL, ERR extends Throwable> Result<VAL, ERR> from(Object o) {
+    static <VAL, ERR extends Throwable> Result<VAL> from(Object o) {
         if (o == null) {
             return EmptyResult.getInstance();
         }
@@ -68,7 +67,7 @@ public interface Result<VAL, ERR extends Throwable> {
     }
 
     @SuppressWarnings("unchecked")
-    static<VAL, ERR extends Throwable> Result<VAL, ERR> of(ExceptionalSupplier<VAL, ERR> es) {
+    static<VAL, ERR extends Throwable> Result<VAL> of(ExceptionalSupplier<VAL, ERR> es) {
         try {
             return accept(es.get());
         } catch (Throwable err) {
@@ -90,7 +89,7 @@ public interface Result<VAL, ERR extends Throwable> {
     // TODO: I'm almost tempted to return a Result<Result<OUT, ERR>, ClassCastException>
     // TODO: Is this even useful? When would you use it? Maybe in tests?
     // TODO: Maybe cast out but not err?
-    static <OUT, ERR extends Throwable> Result<OUT, ERR> ofChecked(
+    static <OUT, ERR extends Throwable> Result<OUT> ofChecked(
             ExceptionalSupplier<OUT, ERR> exceptionalSupplier,
             Class<OUT> outClass,
             Class<ERR> errClass) throws ClassCastException {
@@ -112,7 +111,7 @@ public interface Result<VAL, ERR extends Throwable> {
      * @param <OUT> The type to cast {@code in} to.
      * @return A result containing either {@code in} cast to type {@code <OUT>}, or a {@link ClassCastException}.
      */
-    static <IN, OUT> Result<OUT, ClassCastException> safeCast(IN in, Class<OUT> outClass) {
+    static <IN, OUT> Result<OUT> safeCast(IN in, Class<OUT> outClass) {
         try {
             return accept(outClass.cast(in));
         } catch (ClassCastException cce) {
@@ -126,7 +125,7 @@ public interface Result<VAL, ERR extends Throwable> {
      * @param <VAL> The type of {@code val}.
      * @return A Result containing either a non-null {@code val} or a {@link NullPointerException}.
      */
-    static <VAL> Result<VAL, NullPointerException> requireNonNull(VAL val) {
+    static <VAL> Result<VAL> requireNonNull(VAL val) {
         if (val == null) {
             return new RejectedResult<>(new NullPointerException());
         }
@@ -172,12 +171,12 @@ public interface Result<VAL, ERR extends Throwable> {
      * @param <OUT> The class to checkedCast to.
      * @return {@code this} if {@code <IN>} can be checkedCast to {@code OUT}.
      */
-    <OUT> Result<OUT, ERR> checkedCast(Class<OUT> type) throws ClassCastException;
+    <OUT> Result<OUT> checkedCast(Class<OUT> type) throws ClassCastException;
 
     /**
      * Performs an unchecked cast to {@code RESULT<OUT, ERR>}.
      */
-    <OUT> Result<OUT, ERR> uncheckedCast();
+    <OUT> Result<OUT> uncheckedCast();
 
     /**
      * Get this Result's value if this Result is accepted, or throws IllegalStateException.
@@ -187,7 +186,7 @@ public interface Result<VAL, ERR extends Throwable> {
     /**
      * Get this Result's Throwable if this result is Rejected, or throws IllegalStateException.
      */
-    ERR getException() throws IllegalStateException;
+    Throwable getException() throws IllegalStateException;
 
     /**
      * Get this Result's value if this Result is accepted, or {@code other} if it is rejected.
@@ -198,7 +197,7 @@ public interface Result<VAL, ERR extends Throwable> {
     /**
      * Get this Result's value if this Result is accepted, or throws the included Throwable if it is rejected.
      */
-    VAL orElseThrow() throws ERR;
+    VAL orElseThrow() throws Throwable;
 
     /**
      * Get this Result's value if this Result is accepted, or throws the included Throwable
@@ -209,7 +208,7 @@ public interface Result<VAL, ERR extends Throwable> {
     /**
      * Throws the included Throwable if it is rejected, otherwise does nothing.
      */
-    void throwIfRejected() throws ERR;
+    void throwIfRejected() throws Throwable;
 
     /**
      * Throws the included Throwable wrapped in a {@link RuntimeException} if it is rejected, otherwise does nothing.
@@ -227,10 +226,10 @@ public interface Result<VAL, ERR extends Throwable> {
      * @return If this Result accepted, the result of executing {@code mapper} on this Result's value, otherwise {@code this}
      */
     <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, ? extends OUTERR>>
-    Result<OUT, Throwable> exMap(EF mapper);
+    Result<OUT> exMap(EF mapper);
 
     <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, ? extends OUTERR>>
-    Result<OUT, Throwable> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass, Class<OUTERR> outErrClass);
+    Result<OUT> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass, Class<OUTERR> outErrClass);
 
     /**
      * Calls {@code mapper} on IN and returns {@code Result<OUT,ERR>}
@@ -239,7 +238,7 @@ public interface Result<VAL, ERR extends Throwable> {
      * @return If this Result accepted, the Result of executing {@code mapper} on this Result's value, otherwise {@code this}
      */
     <OUT, F extends Function<? super VAL, ? extends OUT>>
-    Result<OUT, ERR> map(F mapper);
+    Result<OUT> map(F mapper);
 
     /**
      * Converts the Result to an {@link Optional}.
@@ -259,43 +258,43 @@ public interface Result<VAL, ERR extends Throwable> {
      * If this Result is accepted, feed the included value to the supplied {@link Consumer}, otherwise, do nothing.
      * Chainable.
      */
-    Result<VAL, ERR> ifAccepted(Consumer<? super VAL> consumer);
+    Result<VAL> ifAccepted(Consumer<? super VAL> consumer);
 
     /**
      * If this Result is rejected, feed the included {@link Throwable} to the supplied {@link Consumer}, otherwise, do nothing.
      * Chainable.
      */
-    Result<VAL, ERR> ifRejected(Consumer<? super ERR> rejector);
+    Result<VAL> ifRejected(Consumer<? super Throwable> rejector);
 
     /**
      * Feed this Result's value or {@link Throwable} to the appropriate {@link Consumer}.
      * Chainable.
      */
-    Result<VAL, ERR> then(Consumer<? super VAL> consumer, Consumer<? super ERR> rejector);
+    Result<VAL> then(Consumer<? super VAL> consumer, Consumer<? super Throwable> rejector);
 
     /**
      * Feed this Result's value to the supplied {@link Consumer} if it is present, otherwise feed {@code other} to it.
      * Chainable.
      */
-    Result<VAL, ERR> acceptOrElse(Consumer<? super VAL> consumer, VAL other);
+    Result<VAL> acceptOrElse(Consumer<? super VAL> consumer, VAL other);
 
     /**
      * Feed this Result's value to the supplied {@link Consumer} if it is present, otherwise throw this Result's {@link Throwable}.
      * Chainable.
      */
-    Result<VAL, ERR> acceptOrElseThrow(Consumer<? super VAL> consumer) throws ERR;
+    Result<VAL> acceptOrElseThrow(Consumer<? super VAL> consumer) throws Throwable;
 
     /**
      * Feed this Result's value to the supplied {@link Consumer} if it is present, otherwise
      * throw this Result's {@link Throwable} wrapped in a {@link RuntimeException}.
      * Chainable.
      */
-    Result<VAL, ERR> acceptOrElseThrowRuntime(Consumer<? super VAL> consumer) throws RuntimeException;
+    Result<VAL> acceptOrElseThrowRuntime(Consumer<? super VAL> consumer) throws RuntimeException;
 
     /**
      * Feed this Result's value to the supplied {@link Consumer} if it is present, otherwise
      * print the stack trace associated with this Result's {@link Throwable} to standard error.
      * Chainable.
      */
-    Result<VAL, ERR> acceptOrPrintStacktrace(Consumer<? super VAL> consumer);
+    Result<VAL> acceptOrPrintStacktrace(Consumer<? super VAL> consumer);
 }
