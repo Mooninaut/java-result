@@ -19,26 +19,25 @@ import java.util.Objects;
  * limitations under the License.
  */
 
-public class ExceptionalFunctionWrapperImpl<IN, OUT, ERR extends Throwable> implements
-        ExceptionalFunctionWrapper<IN, OUT, ERR> {
-    private final ExceptionalFunction<? super IN, ? extends OUT, ? extends ERR> exceptionalFunction;
+public class ExceptionalFunctionWrapperImpl<IN, OUT> implements
+        ExceptionalFunctionWrapper<IN, OUT> {
+    private final ExceptionalFunction<? super IN, ? extends OUT> exceptionalFunction;
 
-    ExceptionalFunctionWrapperImpl(ExceptionalFunction<? super IN, ? extends OUT, ? extends ERR> exceptionalFunction) {
+    ExceptionalFunctionWrapperImpl(ExceptionalFunction<? super IN, ? extends OUT> exceptionalFunction) {
         this.exceptionalFunction = Objects.requireNonNull(exceptionalFunction);
     }
 
-    public ExceptionalFunction<? super IN, ? extends OUT, ? extends ERR> getExceptionalFunction() {
+    public ExceptionalFunction<? super IN, ? extends OUT> getExceptionalFunction() {
         return exceptionalFunction;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Result<OUT> apply(IN in) {
         try {
             return Result.accept(exceptionalFunction.apply(in));
         } catch (Throwable ex) {
             Exceptions.throwIfUnchecked(ex);
-            return new RejectedResult<>((ERR) ex);
+            return new RejectedResult<>(ex);
         }
     }
 
@@ -50,7 +49,7 @@ public class ExceptionalFunctionWrapperImpl<IN, OUT, ERR extends Throwable> impl
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        ExceptionalFunctionWrapperImpl<?, ?, ?> that = (ExceptionalFunctionWrapperImpl<?, ?, ?>) o;
+        ExceptionalFunctionWrapperImpl<?, ?> that = (ExceptionalFunctionWrapperImpl<?, ?>) o;
         return exceptionalFunction.equals(that.exceptionalFunction);
     }
 

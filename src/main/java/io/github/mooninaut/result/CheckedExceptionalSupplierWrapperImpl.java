@@ -19,17 +19,16 @@ import java.util.Objects;
  * limitations under the License.
  */
 
-public class CheckedExceptionalSupplierWrapperImpl<OUT, ERR extends Throwable> extends
-        ExceptionalSupplierWrapperImpl<OUT, ERR> {
+public class CheckedExceptionalSupplierWrapperImpl<OUT> extends
+        ExceptionalSupplierWrapperImpl<OUT> {
+
     private final Class<OUT> outClass;
-    private final Class<ERR> errClass;
+
     CheckedExceptionalSupplierWrapperImpl(
-            ExceptionalSupplier<? extends OUT, ? extends ERR> es,
-            Class<OUT> outClass,
-            Class<ERR> errClass) {
+            ExceptionalSupplier<? extends OUT> es,
+            Class<OUT> outClass) {
         super(es);
         this.outClass = Objects.requireNonNull(outClass);
-        this.errClass = Objects.requireNonNull(errClass);
     }
 
     @Override
@@ -40,17 +39,11 @@ public class CheckedExceptionalSupplierWrapperImpl<OUT, ERR extends Throwable> e
             return result.checkedCast(outClass);
         }
 
-        errClass.cast(result.getException());
-
         return result;
     }
 
     public Class<OUT> getOutClass() {
         return outClass;
-    }
-
-    public Class<ERR> getErrClass() {
-        return errClass;
     }
 
     @Override
@@ -64,13 +57,12 @@ public class CheckedExceptionalSupplierWrapperImpl<OUT, ERR extends Throwable> e
         if (!super.equals(o)) {
             return false;
         }
-        CheckedExceptionalSupplierWrapperImpl<?, ?> that = (CheckedExceptionalSupplierWrapperImpl<?, ?>) o;
-        return getOutClass().equals(that.getOutClass()) &&
-                getErrClass().equals(that.getErrClass());
+        CheckedExceptionalSupplierWrapperImpl<?> that = (CheckedExceptionalSupplierWrapperImpl<?>) o;
+        return getOutClass().equals(that.getOutClass());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getOutClass(), getErrClass());
+        return Objects.hash(super.hashCode(), getOutClass());
     }
 }

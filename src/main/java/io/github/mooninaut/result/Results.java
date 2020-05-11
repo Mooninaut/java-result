@@ -33,19 +33,18 @@ public interface Results {
      * @param exFunc A function from {@code <IN>} to {@code <OUT>}
      * @param <IN> The value type of an existing {@code Result}.
      * @param <OUT> The value type of the new {@code Result} returned by the lambda.
-     * @param <ERR> The type of the exception possibly thrown by the mapping function.
      * @return A wrapped function that takes {@code Result<IN, Throwable>} and returns {@code Result<OUT, Throwable>}.
      */
-    static <IN, OUT, ERR extends Throwable>
-    Function<Result<IN>, Result<OUT>> exMapper(ExceptionalFunction<? super IN, ? extends OUT, ? extends ERR> exFunc) {
+    static <IN, OUT>
+    Function<Result<IN>, Result<OUT>> exMapper(ExceptionalFunction<? super IN, ? extends OUT> exFunc) {
         return result -> result.exMap(exFunc);
     }
 
-    static <IN, OUT, ERR extends Throwable>
+    static <IN, OUT>
     Function<Result<IN>, Result<OUT>> exMapperChecked(
-            ExceptionalFunction<? super IN, ? extends OUT, ? extends ERR> exFunc,
-            Class<IN> inClass, Class<OUT> outClass, Class<ERR> errClass) {
-        return result -> result.exMapChecked(exFunc, inClass, outClass, errClass);
+            ExceptionalFunction<? super IN, ? extends OUT> exFunc,
+            Class<IN> inClass, Class<OUT> outClass) {
+        return result -> result.exMapChecked(exFunc, inClass, outClass);
     }
 
     /**
@@ -56,10 +55,9 @@ public interface Results {
      * @param func A function from {@code <IN>} to {@code <OUT>}
      * @param <VAL> The value type of an existing {@code Result}.
      * @param <VAL2> The value type of the new {@code Result} returned by the lambda.
-     * @param <ERR> The type of the exception possibly thrown by the mapping function.
      * @return A wrapped function that takes {@code Result<IN, Throwable>} and returns {@code Result<OUT, Throwable>}.
      */
-    static <VAL, VAL2, ERR extends Throwable>
+    static <VAL, VAL2>
     Function<Result<VAL>, Result<VAL2>> mapper(Function<? super VAL, ? extends VAL2> func) {
         return result -> result.map(func);
     }

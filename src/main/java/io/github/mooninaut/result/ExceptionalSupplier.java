@@ -1,7 +1,7 @@
 package io.github.mooninaut.result;
 
 @FunctionalInterface
-public interface ExceptionalSupplier<OUT, ERR extends Throwable> {
+public interface ExceptionalSupplier<OUT> {
 
-    OUT get() throws ERR;
+    OUT get() throws Throwable;
 }

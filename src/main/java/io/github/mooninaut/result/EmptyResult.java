@@ -101,18 +101,18 @@ final class EmptyResult<VAL> implements Result<VAL> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, ? extends OUTERR>>
+    public <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
     Result<OUT> exMap(
             EF mapper) {
-        return (Result<OUT>) ExceptionalFunctionWrapper.wrap(mapper).apply(null);
+        return ExceptionalFunctionWrapper.wrap(mapper).apply(null);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, ? extends OUTERR>>
-    Result<OUT> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass, Class<OUTERR> outErrClass) {
+    public <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
+    Result<OUT> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass) {
         return (Result<OUT>) ExceptionalFunctionWrapper
-                .wrapChecked(mapper, inClass, outClass, outErrClass);
+                .wrapChecked(mapper, inClass, outClass);
     }
 
     @Override

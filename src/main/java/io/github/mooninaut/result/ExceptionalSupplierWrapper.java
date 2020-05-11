@@ -19,21 +19,20 @@ import java.util.function.Supplier;
  * limitations under the License.
  */
 
-public interface ExceptionalSupplierWrapper<OUT, ERR extends Throwable> extends Supplier<Result<OUT>> {
+public interface ExceptionalSupplierWrapper<OUT> extends Supplier<Result<OUT>> {
 
-    static <OUT, ERR extends Throwable>
-    ExceptionalSupplierWrapper<OUT, ERR>
-    wrap(ExceptionalSupplier<? extends OUT, ? extends ERR> es) {
+    static <OUT>
+    ExceptionalSupplierWrapper<OUT>
+    wrap(ExceptionalSupplier<? extends OUT> es) {
         return new ExceptionalSupplierWrapperImpl<>(es);
     }
 
-    static <IN, OUT, ERR extends Throwable>
-    ExceptionalSupplierWrapper<OUT, ERR>
+    static <IN, OUT>
+    ExceptionalSupplierWrapper<OUT>
     wrapChecked(
-            ExceptionalSupplier<? extends OUT, ? extends ERR> es,
-            Class<OUT> outClass,
-            Class<ERR> errClass) {
-        return new CheckedExceptionalSupplierWrapperImpl<>(es, outClass, errClass);
+            ExceptionalSupplier<? extends OUT> es,
+            Class<OUT> outClass) {
+        return new CheckedExceptionalSupplierWrapperImpl<>(es, outClass);
     }
 
     @Override

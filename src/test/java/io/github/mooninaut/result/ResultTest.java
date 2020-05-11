@@ -6,7 +6,6 @@ import org.junit.Test;
 import java.io.BufferedReader;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -33,7 +32,7 @@ public class ResultTest {
                     .map(Result::requireNonNull),
                 Stream.of("badURL").map(ExceptionalFunctionWrapper.wrap(URL::new))
             )
-                .map(Results.exMapperChecked(URL::toURI, URL.class, URI.class, URISyntaxException.class))
+                .map(Results.exMapperChecked(URL::toURI, URL.class, URI.class))
                 .map(Results.mapper(Paths::get))
                 .map(Results.exMapper(Files::newBufferedReader))
                 .map(Results.exMapper(BufferedReader::lines))

@@ -23,14 +23,14 @@ public class SplitStream<VAL> {
     private final Stream<VAL> valueStream;
     private final Stream<Throwable> exceptionStream;
 
-    SplitStream(Stream.Builder<VAL> valueBuilder, Stream.Builder<Throwable> exceptionBuilder) {
+    SplitStream(Stream.Builder<VAL> valueBuilder, Stream.Builder<Throwable> throwableBuilder) {
         valueStream = valueBuilder.build();
-        exceptionStream = exceptionBuilder.build();
+        exceptionStream = throwableBuilder.build();
     }
 
-    SplitStream(Stream<VAL> valueStream, Stream<Throwable> errorStream) {
+    SplitStream(Stream<VAL> valueStream, Stream<Throwable> throwableStream) {
         this.valueStream = valueStream;
-        this.exceptionStream = errorStream;
+        this.exceptionStream = throwableStream;
     }
 
     public Stream<VAL> getValueStream() {
@@ -41,7 +41,7 @@ public class SplitStream<VAL> {
         return exceptionStream;
     }
 
-    public static <VAL, ERR extends Throwable> Builder<VAL> builder() {
+    public static <VAL> Builder<VAL> builder() {
         return new Builder<>();
     }
 

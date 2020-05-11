@@ -19,20 +19,18 @@ import java.util.Objects;
  * limitations under the License.
  */
 
-public class CheckedExceptionalFunctionWrapperImpl<IN, OUT, ERR extends Throwable> extends
-        ExceptionalFunctionWrapperImpl<IN, OUT, ERR> {
+public class CheckedExceptionalFunctionWrapperImpl<IN, OUT> extends
+        ExceptionalFunctionWrapperImpl<IN, OUT> {
     private final Class<IN> inClass;
     private final Class<OUT> outClass;
-    private final Class<ERR> errClass;
+
     CheckedExceptionalFunctionWrapperImpl(
-            ExceptionalFunction<? super IN, ? extends OUT, ? extends ERR> ef,
+            ExceptionalFunction<? super IN, ? extends OUT> ef,
             Class<IN> inClass,
-            Class<OUT> outClass,
-            Class<ERR> errClass) {
+            Class<OUT> outClass) {
         super(ef);
         this.inClass = Objects.requireNonNull(inClass);
         this.outClass = Objects.requireNonNull(outClass);
-        this.errClass = Objects.requireNonNull(errClass);
     }
 
     @Override
@@ -43,8 +41,6 @@ public class CheckedExceptionalFunctionWrapperImpl<IN, OUT, ERR extends Throwabl
             return result.checkedCast(outClass);
         }
 
-        errClass.cast(result.getException());
-
         return result;
     }
 
@@ -54,10 +50,6 @@ public class CheckedExceptionalFunctionWrapperImpl<IN, OUT, ERR extends Throwabl
 
     public Class<OUT> getOutClass() {
         return outClass;
-    }
-
-    public Class<ERR> getErrClass() {
-        return errClass;
     }
 
     @Override
@@ -71,14 +63,13 @@ public class CheckedExceptionalFunctionWrapperImpl<IN, OUT, ERR extends Throwabl
         if (!super.equals(o)) {
             return false;
         }
-        CheckedExceptionalFunctionWrapperImpl<?, ?, ?> that = (CheckedExceptionalFunctionWrapperImpl<?, ?, ?>) o;
+        CheckedExceptionalFunctionWrapperImpl<?, ?> that = (CheckedExceptionalFunctionWrapperImpl<?, ?>) o;
         return getInClass().equals(that.getInClass()) &&
-                getOutClass().equals(that.getOutClass()) &&
-                getErrClass().equals(that.getErrClass());
+                getOutClass().equals(that.getOutClass());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getInClass(), getOutClass(), getErrClass());
+        return Objects.hash(super.hashCode(), getInClass(), getOutClass());
     }
 }

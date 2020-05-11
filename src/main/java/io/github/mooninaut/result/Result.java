@@ -44,34 +44,33 @@ public interface Result<VAL> {
     }
 
     /**
-     * Creates and returns a rejected Result containing an exception, {@code err}, of type {@code <ERR>}.
+     * Creates and returns a rejected Result containing the provided Throwable, {@code err}.
      */
-    static <VAL, ERR extends Throwable> Result<VAL> reject(ERR err) {
+    static <VAL> Result<VAL> reject(Throwable err) {
         return new RejectedResult<>(Objects.requireNonNull(err));
     }
 
     /**
-     * Creates and returns a Result based on the type of the supplied Object.
+     * Creates and returns a Result based on the type of the provided Object.
      * If it extends {@code Throwable}, a rejected Result.
      * Otherwise, an accepted Result.
      */
     @SuppressWarnings("unchecked")
-    static <VAL, ERR extends Throwable> Result<VAL> from(Object o) {
+    static <VAL> Result<VAL> from(Object o) {
         if (o == null) {
             return EmptyResult.getInstance();
         }
         if (o instanceof Throwable) {
-            return new RejectedResult<>((ERR) o);
+            return new RejectedResult<>((Throwable) o);
         }
         return new AcceptedResult<>((VAL) o);
     }
 
-    @SuppressWarnings("unchecked")
-    static<VAL, ERR extends Throwable> Result<VAL> of(ExceptionalSupplier<VAL, ERR> es) {
+    static<VAL> Result<VAL> of(ExceptionalSupplier<VAL> es) {
         try {
             return accept(es.get());
         } catch (Throwable err) {
-            return reject((ERR) err);
+            return reject(err);
         }
     }
 
@@ -80,24 +79,19 @@ public interface Result<VAL> {
      * appropriate.
      * @param exceptionalSupplier an ExceptionalSupplier.
      * @param outClass the class to cast the result of calling {@code exceptionalSupplier} to.
-     * @param errClass the class to cast the error thrown by calling {@code exceptionalSupplier} to.
      * @param <OUT> the type of {@code outClass}.
-     * @param <ERR> the type of {@code errClass}.
-     * @return A {@code Result<OUT, ERR>} containing the result of calling {@code exceptionalSupplier}.
+     * @return A {@code Result<OUT>} containing the result of calling {@code exceptionalSupplier}.
      */
-    // TODO: If !(err instanceof ERR), should this rethrow err, throw ClassCastException, or return a RejectedResult of ClassCastException?
-    // TODO: I'm almost tempted to return a Result<Result<OUT, ERR>, ClassCastException>
+    // TODO: I'm almost tempted to return a Result<Result<OUT>> to wrap the ClassCastException
     // TODO: Is this even useful? When would you use it? Maybe in tests?
-    // TODO: Maybe cast out but not err?
-    static <OUT, ERR extends Throwable> Result<OUT> ofChecked(
-            ExceptionalSupplier<OUT, ERR> exceptionalSupplier,
-            Class<OUT> outClass,
-            Class<ERR> errClass) throws ClassCastException {
+    static <OUT> Result<OUT> ofChecked(
+            ExceptionalSupplier<OUT> exceptionalSupplier,
+            Class<OUT> outClass) throws ClassCastException {
         OUT out;
         try {
             out = exceptionalSupplier.get();
         } catch (Throwable err) {
-            return reject(errClass.cast(err));
+            return reject(err);
         }
         // Casting outside try block to ensure ClassCastException makes it out.
         return accept(outClass.cast(out));
@@ -165,7 +159,7 @@ public interface Result<VAL> {
     Optional<Class<?>> getValueType();
 
     /**
-     * Perform a checked cast to {@code Result<OUT, ERR>} if this Result is accepted.
+     * Perform a checked cast to {@code Result<OUT>} if this Result is accepted.
      * If this Result is rejected, acts as a no-op.
      * @param type The class object of the class to checkedCast to.
      * @param <OUT> The class to checkedCast to.
@@ -174,7 +168,7 @@ public interface Result<VAL> {
     <OUT> Result<OUT> checkedCast(Class<OUT> type) throws ClassCastException;
 
     /**
-     * Performs an unchecked cast to {@code RESULT<OUT, ERR>}.
+     * Performs an unchecked cast to {@code RESULT<OUT>}.
      */
     <OUT> Result<OUT> uncheckedCast();
 
@@ -192,7 +186,6 @@ public interface Result<VAL> {
      * Get this Result's value if this Result is accepted, or {@code other} if it is rejected.
      */
     VAL orElse(VAL other);
-
 
     /**
      * Get this Result's value if this Result is accepted, or throws the included Throwable if it is rejected.
@@ -216,23 +209,19 @@ public interface Result<VAL> {
     void throwRuntimeIfRejected() throws RuntimeException;
 
     /**
-     * Calls {@code mapper} on IN and returns either {@code Result<OUT,ERR>} or {@code Result<OUT,OUTERR>},
-     * where {@code <OUTERR>} is the exception type thrown by {@code mapper}.
-     * Since it cannot be determined at compile time which exception type will be the result, casts both exceptions to Throwable.
-     * A run-time type check will be required if the type of the exception is significant.
+     * Calls {@code mapper} on IN and returns {@code Result<OUT>}.
      * @param <OUT> The return type of {@code mapper}.
-     * @param <OUTERR> The exception type thrown by {@code mapper}.
-     * @param mapper A function mapping from type {@code <IN>} to type {@code <OUT>}, possibly throwing an exception of type {@code <OUTERR>}
+     * @param mapper A function mapping from type {@code <IN>} to type {@code <OUT>}, possibly throwing an exception.
      * @return If this Result accepted, the result of executing {@code mapper} on this Result's value, otherwise {@code this}
      */
-    <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, ? extends OUTERR>>
+    <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
     Result<OUT> exMap(EF mapper);
 
-    <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, ? extends OUTERR>>
-    Result<OUT> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass, Class<OUTERR> outErrClass);
+    <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
+    Result<OUT> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass);
 
     /**
-     * Calls {@code mapper} on IN and returns {@code Result<OUT,ERR>}
+     * Calls {@code mapper} on IN and returns {@code Result<OUT>}
      * @param mapper A function mapping from type {@code <IN>} to type {@code <OUT>}
      * @param <OUT> The return type of {@code mapper}
      * @return If this Result accepted, the Result of executing {@code mapper} on this Result's value, otherwise {@code this}

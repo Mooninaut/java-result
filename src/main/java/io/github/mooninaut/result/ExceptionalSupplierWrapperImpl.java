@@ -19,22 +19,21 @@ import java.util.Objects;
  * limitations under the License.
  */
 
-public class ExceptionalSupplierWrapperImpl<OUT, ERR extends Throwable> implements
-        ExceptionalSupplierWrapper<OUT, ERR> {
-    private final ExceptionalSupplier<? extends OUT, ? extends ERR> es;
+public class ExceptionalSupplierWrapperImpl<OUT> implements
+        ExceptionalSupplierWrapper<OUT> {
+    private final ExceptionalSupplier<? extends OUT> es;
 
-    ExceptionalSupplierWrapperImpl(ExceptionalSupplier<? extends OUT, ? extends ERR> es) {
+    ExceptionalSupplierWrapperImpl(ExceptionalSupplier<? extends OUT> es) {
         this.es = Objects.requireNonNull(es);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Result<OUT> get() {
         try {
             return Result.accept(es.get());
         } catch (Throwable ex) {
             Exceptions.throwIfUnchecked(ex);
-            return new RejectedResult<>((ERR) ex);
+            return new RejectedResult<>(ex);
         }
     }
 
@@ -46,7 +45,7 @@ public class ExceptionalSupplierWrapperImpl<OUT, ERR extends Throwable> implemen
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        ExceptionalSupplierWrapperImpl<?, ?> that = (ExceptionalSupplierWrapperImpl<?, ?>) o;
+        ExceptionalSupplierWrapperImpl<?> that = (ExceptionalSupplierWrapperImpl<?>) o;
         return es.equals(that.es);
     }
 

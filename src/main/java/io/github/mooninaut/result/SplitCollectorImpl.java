@@ -38,7 +38,7 @@ public class SplitCollectorImpl<VAL>
         }
     }
 
-    public static <VAL, ERR extends Throwable> SplitCollector<VAL> collector() {
+    public static <VAL> SplitCollector<VAL> collector() {
         return Self.getInstance();
     }
 
@@ -53,7 +53,7 @@ public class SplitCollectorImpl<VAL>
     public BiConsumer<SplitStream.Builder<VAL>, Result<VAL>> accumulator() {
         return SplitCollectorImpl::accumulate;
     }
-    private static <VAL, ERR extends Throwable> void accumulate(SplitStream.Builder<VAL> builders, Result<VAL> value) {
+    private static <VAL> void accumulate(SplitStream.Builder<VAL> builders, Result<VAL> value) {
         builders.add(value);
     }
 
@@ -61,7 +61,7 @@ public class SplitCollectorImpl<VAL>
     public BinaryOperator<SplitStream.Builder<VAL>> combiner() {
         return SplitCollectorImpl::combine;
     }
-    private static <VAL, ERR extends Throwable> SplitStream.Builder<VAL> combine(
+    private static <VAL> SplitStream.Builder<VAL> combine(
             SplitStream.Builder<VAL> one,
             SplitStream.Builder<VAL> two) {
         return one.append(two);
@@ -71,7 +71,7 @@ public class SplitCollectorImpl<VAL>
     public Function<SplitStream.Builder<VAL>, SplitStream<VAL>> finisher() {
         return SplitCollectorImpl::finish;
     }
-    private static <VAL, ERR extends Throwable> SplitStream<VAL> finish(SplitStream.Builder<VAL> builders) {
+    private static <VAL> SplitStream<VAL> finish(SplitStream.Builder<VAL> builders) {
         return builders.build();
     }
 
