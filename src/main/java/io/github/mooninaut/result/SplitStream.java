@@ -63,20 +63,30 @@ public class SplitStream<VAL, ERR extends Throwable> {
             return new SplitStream<>(valueBuilder, exceptionBuilder);
         }
 
-        public void addValue(VAL value) {
+        public SplitStream.Builder<VAL, ERR> append(SplitStream.Builder<VAL, ERR> other) {
+            SplitStream<VAL, ERR> otherStream = other.build();
+            otherStream.getValueStream().forEach(valueBuilder);
+            otherStream.getExceptionStream().forEach(exceptionBuilder);
+            return this;
+        }
+
+        public Builder<VAL, ERR> addValue(VAL value) {
             valueBuilder.add(value);
+            return this;
         }
 
-        public void addException(ERR error) {
+        public Builder<VAL, ERR> addException(ERR error) {
             exceptionBuilder.add(error);
+            return this;
         }
 
-        public void add(Result<VAL, ERR> result) {
+        public Builder<VAL, ERR> add(Result<VAL, ERR> result) {
             if (result.isAccepted()) {
                 valueBuilder.add(result.get());
             } else {
                 exceptionBuilder.add(result.getException());
             }
+            return this;
         }
     }
 }

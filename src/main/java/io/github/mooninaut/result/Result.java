@@ -100,6 +100,7 @@ public interface Result<VAL, ERR extends Throwable> {
         } catch (Throwable err) {
             return reject(errClass.cast(err));
         }
+        // Casting outside try block to ensure ClassCastException makes it out.
         return accept(outClass.cast(out));
     }
 

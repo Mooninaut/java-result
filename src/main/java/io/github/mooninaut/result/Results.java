@@ -110,7 +110,7 @@ public interface Results {
      * Transforms a Stream of Results to a single SplitStream containing a stream of values and a Stream of Throwables.
      */
     static <VAL, ERR extends Throwable> SplitStream<VAL, ERR> splitStream(Stream<Result<VAL, ERR>> stream) {
-        return stream.collect(new SplitCollector<>());
+        return stream.collect(new SplitCollectorImpl<>());
     }
 
     /**
