@@ -27,7 +27,7 @@ import java.util.function.Function;
  * or if rejected, a Throwable.
  * @param <VAL> The type of the included value, if present.
  */
-public interface Result<VAL> {
+public sealed abstract class Result<VAL> permits AcceptedResult, EmptyResult, RejectedResult {
 
     /**
      * Returns an empty Result. May or may not be a singleton.
@@ -132,31 +132,31 @@ public interface Result<VAL> {
      * Is this result Accepted?
      * @return true for an accepted (possibly null) value, false if rejected.
      */
-    boolean isAccepted();
+    abstract boolean isAccepted();
 
     /**
      * Is this Result accepted and non-null?
      * @return true for an accepted non-null value, false if null or rejected.
      */
-    boolean isPresent();
+    abstract boolean isPresent();
 
     /**
      * Is this Result accepted and null?
      * @return true if this Result is accepted and null, false if non-null or rejected.
      */
-    boolean isEmpty();
+    abstract boolean isEmpty();
 
     /**
      * Is this result rejected?
      * @return true if this Result is rejected, false if accepted.
      */
-    boolean isRejected();
+    abstract boolean isRejected();
 
     /**
      * Get the class of the contained value or Empty if this Result contains null or is rejected.
      * @return the class of the contained value or Empty if this Result contains null or is rejected.
      */
-    Optional<Class<?>> getValueType();
+    abstract Optional<Class<?>> getValueType();
 
     /**
      * Perform a checked cast to {@code Result<OUT>} if this Result is accepted.
@@ -165,48 +165,48 @@ public interface Result<VAL> {
      * @param <OUT> The class to checkedCast to.
      * @return {@code this} if {@code <IN>} can be checkedCast to {@code OUT}.
      */
-    <OUT> Result<OUT> checkedCast(Class<OUT> type) throws ClassCastException;
+    abstract <OUT> Result<OUT> checkedCast(Class<OUT> type) throws ClassCastException;
 
     /**
      * Performs an unchecked cast to {@code RESULT<OUT>}.
      */
-    <OUT> Result<OUT> uncheckedCast();
+    abstract <OUT> Result<OUT> uncheckedCast();
 
     /**
      * Get this Result's value if this Result is accepted, or throws IllegalStateException.
      */
-    VAL get() throws IllegalStateException;
+    abstract VAL get() throws IllegalStateException;
 
     /**
      * Get this Result's Throwable if this result is Rejected, or throws IllegalStateException.
      */
-    Throwable getException() throws IllegalStateException;
+    abstract Throwable getException() throws IllegalStateException;
 
     /**
      * Get this Result's value if this Result is accepted, or {@code other} if it is rejected.
      */
-    VAL orElse(VAL other);
+    abstract VAL orElse(VAL other);
 
     /**
      * Get this Result's value if this Result is accepted, or throws the included Throwable if it is rejected.
      */
-    VAL orElseThrow() throws Throwable;
+    abstract VAL orElseThrow() throws Throwable;
 
     /**
      * Get this Result's value if this Result is accepted, or throws the included Throwable
      * wrapped in a {@link RuntimeException} if it is rejected.
      */
-    VAL orElseThrowRuntime() throws RuntimeException;
+    abstract VAL orElseThrowRuntime() throws RuntimeException;
 
     /**
      * Throws the included Throwable if it is rejected, otherwise does nothing.
      */
-    void throwIfRejected() throws Throwable;
+    abstract void throwIfRejected() throws Throwable;
 
     /**
      * Throws the included Throwable wrapped in a {@link RuntimeException} if it is rejected, otherwise does nothing.
      */
-    void throwRuntimeIfRejected() throws RuntimeException;
+    abstract void throwRuntimeIfRejected() throws RuntimeException;
 
     /**
      * Calls {@code mapper} on IN and returns {@code Result<OUT>}.
@@ -214,10 +214,10 @@ public interface Result<VAL> {
      * @param mapper A function mapping from type {@code <IN>} to type {@code <OUT>}, possibly throwing an exception.
      * @return If this Result accepted, the result of executing {@code mapper} on this Result's value, otherwise {@code this}
      */
-    <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
+    abstract <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
     Result<OUT> exMap(EF mapper);
 
-    <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
+    abstract <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
     Result<OUT> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass);
 
     /**
@@ -226,7 +226,7 @@ public interface Result<VAL> {
      * @param <OUT> The return type of {@code mapper}
      * @return If this Result accepted, the Result of executing {@code mapper} on this Result's value, otherwise {@code this}
      */
-    <OUT, F extends Function<? super VAL, ? extends OUT>>
+    abstract <OUT, F extends Function<? super VAL, ? extends OUT>>
     Result<OUT> map(F mapper);
 
     /**
@@ -234,56 +234,56 @@ public interface Result<VAL> {
      * @return the accepted value in an Optional, or, if rejected, an empty Optional.
      * @throws NullPointerException if result is accepted, but value is null
      */
-    Optional<VAL> toOptional() throws NullPointerException;
+    abstract Optional<VAL> toOptional() throws NullPointerException;
 
     /**
      * Converts the Result to an {@link Optional}.
      * Does not distinguish between a rejected result and an accepted, but null result. In either case, returns an empty Optional.
      * @return the accepted value in an Optional, or, if rejected, an empty Optional.
      */
-    Optional<VAL> toNullableOptional();
+    abstract Optional<VAL> toNullableOptional();
 
     /**
      * If this Result is accepted, feed the included value to the supplied {@link Consumer}, otherwise, do nothing.
      * Chainable.
      */
-    Result<VAL> ifAccepted(Consumer<? super VAL> consumer);
+    abstract Result<VAL> ifAccepted(Consumer<? super VAL> consumer);
 
     /**
      * If this Result is rejected, feed the included {@link Throwable} to the supplied {@link Consumer}, otherwise, do nothing.
      * Chainable.
      */
-    Result<VAL> ifRejected(Consumer<? super Throwable> rejector);
+    abstract Result<VAL> ifRejected(Consumer<? super Throwable> rejector);
 
     /**
      * Feed this Result's value or {@link Throwable} to the appropriate {@link Consumer}.
      * Chainable.
      */
-    Result<VAL> then(Consumer<? super VAL> consumer, Consumer<? super Throwable> rejector);
+    abstract Result<VAL> then(Consumer<? super VAL> consumer, Consumer<? super Throwable> rejector);
 
     /**
      * Feed this Result's value to the supplied {@link Consumer} if it is present, otherwise feed {@code other} to it.
      * Chainable.
      */
-    Result<VAL> acceptOrElse(Consumer<? super VAL> consumer, VAL other);
+    abstract Result<VAL> acceptOrElse(Consumer<? super VAL> consumer, VAL other);
 
     /**
      * Feed this Result's value to the supplied {@link Consumer} if it is present, otherwise throw this Result's {@link Throwable}.
      * Chainable.
      */
-    Result<VAL> acceptOrElseThrow(Consumer<? super VAL> consumer) throws Throwable;
+    abstract Result<VAL> acceptOrElseThrow(Consumer<? super VAL> consumer) throws Throwable;
 
     /**
      * Feed this Result's value to the supplied {@link Consumer} if it is present, otherwise
      * throw this Result's {@link Throwable} wrapped in a {@link RuntimeException}.
      * Chainable.
      */
-    Result<VAL> acceptOrElseThrowRuntime(Consumer<? super VAL> consumer) throws RuntimeException;
+    abstract Result<VAL> acceptOrElseThrowRuntime(Consumer<? super VAL> consumer) throws RuntimeException;
 
     /**
      * Feed this Result's value to the supplied {@link Consumer} if it is present, otherwise
      * print the stack trace associated with this Result's {@link Throwable} to standard error.
      * Chainable.
      */
-    Result<VAL> acceptOrPrintStacktrace(Consumer<? super VAL> consumer);
+    abstract Result<VAL> acceptOrPrintStacktrace(Consumer<? super VAL> consumer);
 }

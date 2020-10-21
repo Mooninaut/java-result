@@ -22,7 +22,7 @@ import java.util.function.Function;
  * limitations under the License.
  */
 
-final class AcceptedResult<VAL> implements Result<VAL> {
+final class AcceptedResult<VAL> extends Result<VAL> {
     ////// Fields //////
     private final VAL value;
 
