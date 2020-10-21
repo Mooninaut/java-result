@@ -116,7 +116,6 @@ final class AcceptedResult<VAL> extends Result<VAL> {
     @Override
     public Optional<VAL> toOptional() throws NullPointerException {
         return Optional.of(get());
-
     }
 
     @Override
