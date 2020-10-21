@@ -1,5 +1,5 @@
 # java-result
-A Java implementation of a generic Result<VALUE, ERROR> type
+A Java implementation of a generic Result<VALUE> type
 
 ## LICENSE
 

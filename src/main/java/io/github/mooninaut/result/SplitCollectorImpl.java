@@ -24,54 +24,54 @@ import java.util.function.Supplier;
  * limitations under the License.
  */
 
-public class SplitCollectorImpl<VAL, ERR extends Throwable>
-        implements SplitCollector<VAL, ERR> {
+public class SplitCollectorImpl<VAL>
+        implements SplitCollector<VAL> {
 
-    enum Self {
+    private enum Self {
         INSTANCE;
 
-        private final SplitCollectorImpl<?, ?> value = new SplitCollectorImpl<>();
+        private final SplitCollectorImpl<?> value = new SplitCollectorImpl<>();
 
         @SuppressWarnings("unchecked")
-        public static <VAL, ERR extends Throwable> SplitCollector<VAL, ERR> getInstance() {
-            return (SplitCollector<VAL, ERR>) INSTANCE.value;
+        public static <VAL> SplitCollector<VAL> getInstance() {
+            return (SplitCollector<VAL>) INSTANCE.value;
         }
     }
 
-    public static <VAL, ERR extends Throwable> SplitCollector<VAL, ERR> collector() {
+    public static <VAL> SplitCollector<VAL> collector() {
         return Self.getInstance();
     }
 
     private SplitCollectorImpl() { }
 
     @Override
-    public Supplier<SplitStream.Builder<VAL, ERR>> supplier() {
+    public Supplier<SplitStream.Builder<VAL>> supplier() {
         return SplitStream.Builder::new;
     }
 
     @Override
-    public BiConsumer<SplitStream.Builder<VAL, ERR>, Result<VAL, ERR>> accumulator() {
+    public BiConsumer<SplitStream.Builder<VAL>, Result<VAL>> accumulator() {
         return SplitCollectorImpl::accumulate;
     }
-    private static <VAL, ERR extends Throwable> void accumulate(SplitStream.Builder<VAL, ERR> builders, Result<VAL, ERR> value) {
+    private static <VAL> void accumulate(SplitStream.Builder<VAL> builders, Result<VAL> value) {
         builders.add(value);
     }
 
     @Override
-    public BinaryOperator<SplitStream.Builder<VAL, ERR>> combiner() {
+    public BinaryOperator<SplitStream.Builder<VAL>> combiner() {
         return SplitCollectorImpl::combine;
     }
-    private static <VAL, ERR extends Throwable> SplitStream.Builder<VAL, ERR> combine(
-            SplitStream.Builder<VAL, ERR> one,
-            SplitStream.Builder<VAL, ERR> two) {
+    private static <VAL> SplitStream.Builder<VAL> combine(
+            SplitStream.Builder<VAL> one,
+            SplitStream.Builder<VAL> two) {
         return one.append(two);
     }
 
     @Override
-    public Function<SplitStream.Builder<VAL, ERR>, SplitStream<VAL, ERR>> finisher() {
+    public Function<SplitStream.Builder<VAL>, SplitStream<VAL>> finisher() {
         return SplitCollectorImpl::finish;
     }
-    private static <VAL, ERR extends Throwable> SplitStream<VAL, ERR> finish(SplitStream.Builder<VAL, ERR> builders) {
+    private static <VAL> SplitStream<VAL> finish(SplitStream.Builder<VAL> builders) {
         return builders.build();
     }
 

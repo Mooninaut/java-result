@@ -22,13 +22,13 @@ import java.util.function.Function;
  * limitations under the License.
  */
 
-final class RejectedResult<VAL, ERR extends Throwable> implements Result<VAL, ERR> {
+final class RejectedResult<VAL> implements Result<VAL> {
     ////// Fields //////
-    private final ERR throwable;
+    private final Throwable throwable;
 
     ////// Constructor ///////
 
-    RejectedResult(ERR throwable) {
+    RejectedResult(Throwable throwable) {
         this.throwable = throwable;
     }
 
@@ -60,14 +60,14 @@ final class RejectedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
 
     @SuppressWarnings("unchecked")
     @Override
-    public <OUT> Result<OUT, ERR> checkedCast(Class<OUT> type) {
-        return (Result<OUT, ERR>) this;
+    public <OUT> Result<OUT> checkedCast(Class<OUT> type) {
+        return (Result<OUT>) this;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <OUT> Result<OUT, ERR> uncheckedCast() {
-        return (Result<OUT, ERR>) this;
+    public <OUT> Result<OUT> uncheckedCast() {
+        return (Result<OUT>) this;
     }
 
     @Override
@@ -76,7 +76,7 @@ final class RejectedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
     }
 
     @Override
-    public ERR getException() {
+    public Throwable getException() {
         return throwable;
     }
 
@@ -86,29 +86,29 @@ final class RejectedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
     }
 
     @Override
-    public VAL orElseThrow() throws ERR {
+    public VAL orElseThrow() throws Throwable {
         throw throwable;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, ? extends OUTERR>>
-    Result<OUT, Throwable> exMap(EF mapper) {
-        return (Result<OUT, Throwable>) this;
+    public <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
+    Result<OUT> exMap(EF mapper) {
+        return (Result<OUT>) this;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <OUT, OUTERR extends Throwable, EF extends ExceptionalFunction<? super VAL, ? extends OUT, ? extends OUTERR>>
-    Result<OUT, Throwable> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass, Class<OUTERR> outErrClass) {
-        return (Result<OUT, Throwable>) this;
+    public <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
+    Result<OUT> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass) {
+        return (Result<OUT>) this;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <OUT, F extends Function<? super VAL, ? extends OUT>>
-    Result<OUT, ERR> map(F mapper) {
-        return (Result<OUT, ERR>) this;
+    Result<OUT> map(F mapper) {
+        return (Result<OUT>) this;
     }
 
     @Override
@@ -127,7 +127,7 @@ final class RejectedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
     }
 
     @Override
-    public void throwIfRejected() throws ERR {
+    public void throwIfRejected() throws Throwable {
         throw throwable;
     }
 
@@ -137,36 +137,36 @@ final class RejectedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
     }
 
     @Override
-    public Result<VAL, ERR> ifAccepted(Consumer<? super VAL> consumer) {
+    public Result<VAL> ifAccepted(Consumer<? super VAL> consumer) {
         return this;
     }
 
     @Override
-    public Result<VAL, ERR> ifRejected(Consumer<? super ERR> rejector) {
+    public Result<VAL> ifRejected(Consumer<? super Throwable> rejector) {
         rejector.accept(throwable);
         return this;
     }
 
     @Override
-    public Result<VAL, ERR> then(Consumer<? super VAL> consumer, Consumer<? super ERR> rejector) {
+    public Result<VAL> then(Consumer<? super VAL> consumer, Consumer<? super Throwable> rejector) {
         rejector.accept(throwable);
         return this;
     }
     @Override
-    public Result<VAL, ERR> acceptOrElse(Consumer<? super VAL> consumer, VAL other) {
+    public Result<VAL> acceptOrElse(Consumer<? super VAL> consumer, VAL other) {
         consumer.accept(other);
         return this;
     }
     @Override
-    public Result<VAL, ERR> acceptOrElseThrow(Consumer<? super VAL> consumer) throws ERR {
+    public Result<VAL> acceptOrElseThrow(Consumer<? super VAL> consumer) throws Throwable {
         throw throwable;
     }
     @Override
-    public Result<VAL, ERR> acceptOrElseThrowRuntime(Consumer<? super VAL> consumer) {
+    public Result<VAL> acceptOrElseThrowRuntime(Consumer<? super VAL> consumer) {
         throw new RuntimeException(throwable);
     }
     @Override
-    public Result<VAL, ERR> acceptOrPrintStacktrace(Consumer<? super VAL> consumer) {
+    public Result<VAL> acceptOrPrintStacktrace(Consumer<? super VAL> consumer) {
         throwable.printStackTrace();
         return this;
     }
@@ -180,7 +180,7 @@ final class RejectedResult<VAL, ERR extends Throwable> implements Result<VAL, ER
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        RejectedResult<?, ?> otherResult = (RejectedResult<?, ?>) o;
+        RejectedResult<?> otherResult = (RejectedResult<?>) o;
         return throwable == otherResult.throwable;
     }
 

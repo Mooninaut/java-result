@@ -33,19 +33,18 @@ public interface Results {
      * @param exFunc A function from {@code <IN>} to {@code <OUT>}
      * @param <IN> The value type of an existing {@code Result}.
      * @param <OUT> The value type of the new {@code Result} returned by the lambda.
-     * @param <ERR> The type of the exception possibly thrown by the mapping function.
      * @return A wrapped function that takes {@code Result<IN, Throwable>} and returns {@code Result<OUT, Throwable>}.
      */
-    static <IN, OUT, ERR extends Throwable>
-    Function<Result<IN, ? extends Throwable>, Result<OUT, Throwable>> exMapper(ExceptionalFunction<? super IN, ? extends OUT, ? extends ERR> exFunc) {
+    static <IN, OUT>
+    Function<Result<IN>, Result<OUT>> exMapper(ExceptionalFunction<? super IN, ? extends OUT> exFunc) {
         return result -> result.exMap(exFunc);
     }
 
-    static <IN, OUT, ERR extends Throwable>
-    Function<Result<IN, ? extends Throwable>, Result<OUT, Throwable>> exMapperChecked(
-            ExceptionalFunction<? super IN, ? extends OUT, ? extends ERR> exFunc,
-            Class<IN> inClass, Class<OUT> outClass, Class<ERR> errClass) {
-        return result -> result.exMapChecked(exFunc, inClass, outClass, errClass);
+    static <IN, OUT>
+    Function<Result<IN>, Result<OUT>> exMapperChecked(
+            ExceptionalFunction<? super IN, ? extends OUT> exFunc,
+            Class<IN> inClass, Class<OUT> outClass) {
+        return result -> result.exMapChecked(exFunc, inClass, outClass);
     }
 
     /**
@@ -56,67 +55,66 @@ public interface Results {
      * @param func A function from {@code <IN>} to {@code <OUT>}
      * @param <VAL> The value type of an existing {@code Result}.
      * @param <VAL2> The value type of the new {@code Result} returned by the lambda.
-     * @param <ERR> The type of the exception possibly thrown by the mapping function.
      * @return A wrapped function that takes {@code Result<IN, Throwable>} and returns {@code Result<OUT, Throwable>}.
      */
-    static <VAL, VAL2, ERR extends Throwable>
-    Function<Result<VAL, ERR>, Result<VAL2, ERR>> mapper(Function<? super VAL, ? extends VAL2> func) {
+    static <VAL, VAL2>
+    Function<Result<VAL>, Result<VAL2>> mapper(Function<? super VAL, ? extends VAL2> func) {
         return result -> result.map(func);
     }
 
     /**
      * Map and filter a Stream of Results to a Stream of just values.
      */
-    static <VAL> Stream<VAL> valueStream(Stream<Result<VAL, ? extends Throwable>> stream) {
+    static <VAL> Stream<VAL> valueStream(Stream<Result<VAL>> stream) {
         return stream.filter(Result::isAccepted).map(Result::get);
     }
 
     /**
      * Map and filter a Collection of Results to a Stream of just values.
      */
-    static <VAL> Stream<VAL> valueStream(Collection<Result<VAL, ? extends Throwable>> collection) {
+    static <VAL> Stream<VAL> valueStream(Collection<Result<VAL>> collection) {
         return valueStream(collection.stream());
     }
 
     /**
      * Map and filter a Stream of Results to a Stream of just Throwables.
      */
-    static <VAL> Stream<? extends Throwable> exceptionStream(Stream<Result<VAL, ? extends Throwable>> stream) {
+    static <VAL> Stream<? extends Throwable> exceptionStream(Stream<Result<VAL>> stream) {
         return stream.filter(Result::isRejected).map(Result::getException);
     }
 
     /**
      * Map and filter a Collection of Results to a Stream of just Throwables.
      */
-    static <VAL> Stream<? extends Throwable> exceptionStream(Collection<Result<VAL, ? extends Throwable>> collection) {
+    static <VAL> Stream<? extends Throwable> exceptionStream(Collection<Result<VAL>> collection) {
         return exceptionStream(collection.stream());
     }
 
     /**
      * Map a Stream of Results to a Stream of Optionals.
      */
-    static <VAL> Stream<Optional<VAL>> optionalStream(Stream<Result<VAL, ? extends Throwable>> stream) {
+    static <VAL> Stream<Optional<VAL>> optionalStream(Stream<Result<VAL>> stream) {
         return stream.map(Result::toNullableOptional);
     }
 
     /**
      * Map a Collection of Results to a Stream of Optionals.
      */
-    static <VAL> Stream<Optional<VAL>> optionalStream(Collection<Result<VAL, ? extends Throwable>> collection) {
+    static <VAL> Stream<Optional<VAL>> optionalStream(Collection<Result<VAL>> collection) {
         return optionalStream(collection.stream());
     }
 
     /**
      * Transforms a Stream of Results to a single SplitStream containing a stream of values and a Stream of Throwables.
      */
-    static <VAL, ERR extends Throwable> SplitStream<VAL, ERR> splitStream(Stream<Result<VAL, ERR>> stream) {
-        return stream.collect(new SplitCollectorImpl<>());
+    static <VAL> SplitStream<VAL> splitStream(Stream<Result<VAL>> stream) {
+        return stream.collect(SplitCollectorImpl.collector());
     }
 
     /**
      * Transforms a Collection of Results to a single SplitStream containing a stream of values and a Stream of Throwables.
      */
-    static <VAL, ERR extends Throwable> SplitStream<VAL, ERR> splitStream(Collection<Result<VAL, ERR>> collection) {
+    static <VAL> SplitStream<VAL> splitStream(Collection<Result<VAL>> collection) {
         return splitStream(collection.stream());
     }
 }

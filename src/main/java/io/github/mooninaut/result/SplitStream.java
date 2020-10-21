@@ -19,68 +19,68 @@ import java.util.stream.Stream;
  * limitations under the License.
  */
 
-public class SplitStream<VAL, ERR extends Throwable> {
+public class SplitStream<VAL> {
     private final Stream<VAL> valueStream;
-    private final Stream<ERR> exceptionStream;
+    private final Stream<Throwable> exceptionStream;
 
-    SplitStream(Stream.Builder<VAL> valueBuilder, Stream.Builder<ERR> exceptionBuilder) {
+    SplitStream(Stream.Builder<VAL> valueBuilder, Stream.Builder<Throwable> throwableBuilder) {
         valueStream = valueBuilder.build();
-        exceptionStream = exceptionBuilder.build();
+        exceptionStream = throwableBuilder.build();
     }
 
-    SplitStream(Stream<VAL> valueStream, Stream<ERR> errorStream) {
+    SplitStream(Stream<VAL> valueStream, Stream<Throwable> throwableStream) {
         this.valueStream = valueStream;
-        this.exceptionStream = errorStream;
+        this.exceptionStream = throwableStream;
     }
 
     public Stream<VAL> getValueStream() {
         return valueStream;
     }
 
-    public Stream<ERR> getExceptionStream() {
+    public Stream<Throwable> getExceptionStream() {
         return exceptionStream;
     }
 
-    public static <VAL, ERR extends Throwable> Builder<VAL, ERR> builder() {
+    public static <VAL> Builder<VAL> builder() {
         return new Builder<>();
     }
 
-    public static class Builder<VAL, ERR extends Throwable> {
+    public static class Builder<VAL> {
         private final Stream.Builder<VAL> valueBuilder;
-        private final Stream.Builder<ERR> exceptionBuilder;
+        private final Stream.Builder<Throwable> exceptionBuilder;
 
         public Builder() {
             valueBuilder = Stream.builder();
             exceptionBuilder = Stream.builder();
         }
 
-        public Builder(Stream.Builder<VAL> valueBuilder, Stream.Builder<ERR> exceptionBuilder) {
+        public Builder(Stream.Builder<VAL> valueBuilder, Stream.Builder<Throwable> exceptionBuilder) {
             this.valueBuilder = valueBuilder;
             this.exceptionBuilder = exceptionBuilder;
         }
 
-        public SplitStream<VAL, ERR> build() {
+        public SplitStream<VAL> build() {
             return new SplitStream<>(valueBuilder, exceptionBuilder);
         }
 
-        public SplitStream.Builder<VAL, ERR> append(SplitStream.Builder<VAL, ERR> other) {
-            SplitStream<VAL, ERR> otherStream = other.build();
+        public SplitStream.Builder<VAL> append(SplitStream.Builder<VAL> other) {
+            SplitStream<VAL> otherStream = other.build();
             otherStream.getValueStream().forEach(valueBuilder);
             otherStream.getExceptionStream().forEach(exceptionBuilder);
             return this;
         }
 
-        public Builder<VAL, ERR> addValue(VAL value) {
+        public Builder<VAL> addValue(VAL value) {
             valueBuilder.add(value);
             return this;
         }
 
-        public Builder<VAL, ERR> addException(ERR error) {
+        public Builder<VAL> addException(Throwable error) {
             exceptionBuilder.add(error);
             return this;
         }
 
-        public Builder<VAL, ERR> add(Result<VAL, ERR> result) {
+        public Builder<VAL> add(Result<VAL> result) {
             if (result.isAccepted()) {
                 valueBuilder.add(result.get());
             } else {

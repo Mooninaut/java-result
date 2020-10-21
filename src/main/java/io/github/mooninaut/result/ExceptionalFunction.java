@@ -18,7 +18,7 @@ package io.github.mooninaut.result;
  */
 
 @FunctionalInterface
-public interface ExceptionalFunction<IN, OUT, ERR extends Throwable> {
+public interface ExceptionalFunction<IN, OUT> {
 
-    OUT apply(IN argument) throws ERR;
+    OUT apply(IN argument) throws Throwable;
 }

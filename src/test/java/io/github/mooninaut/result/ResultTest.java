@@ -6,7 +6,6 @@ import org.junit.Test;
 import java.io.BufferedReader;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -16,24 +15,24 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 public class ResultTest {
 
     @Test
     public void fileReadTest() {
         List<String> fileNameList = Arrays.asList("files/file1.txt", "files/file2.txt", "files/doesnotexist");
-        SplitStream<String, Throwable> splitStream = Results.splitStream(
+        SplitStream<String> splitStream = Results.splitStream(
             Stream.concat(
                 fileNameList.stream()
                     .map(fileName -> ResultTest.class.getClassLoader().getResource(fileName))
                     .map(Result::requireNonNull),
                 Stream.of("badURL").map(ExceptionalFunctionWrapper.wrap(URL::new))
             )
-                .map(Results.exMapperChecked(URL::toURI, URL.class, URI.class, URISyntaxException.class))
+                .map(Results.exMapperChecked(URL::toURI, URL.class, URI.class))
                 .map(Results.mapper(Paths::get))
                 .map(Results.exMapper(Files::newBufferedReader))
                 .map(Results.exMapper(BufferedReader::lines))
@@ -53,18 +52,6 @@ public class ResultTest {
     }
 
     @Test
-    public void cannotRejectNonThrowable() {
-        boolean success;
-        try {
-            Result.reject((Throwable) (Object) "not a throwable");
-            success = false;
-        } catch (Throwable err) {
-            success = err instanceof ClassCastException;
-        }
-        assertTrue("Can reject non-Throwable", success);
-    }
-
-    @Test
     public void canAcceptThrowable() { // don't know why you'd want to but there's no law against it
         boolean success;
         try {
@@ -79,14 +66,13 @@ public class ResultTest {
 
     @Test
     public void cannotRejectNull() {
-        boolean success;
+        Throwable throwable = null;
         try {
             Result.reject(null);
-            success = false;
         } catch (Throwable err) {
-            success = err instanceof NullPointerException;
+            throwable = err;
         }
-        assertTrue("Can reject null", success);
+        assertTrue("Can reject null", throwable instanceof NullPointerException);
     }
 
     @Test
@@ -104,7 +90,7 @@ public class ResultTest {
 
     @Test
     public void ofCatchesCorrectly() {
-        Result<Object, Throwable> result = null;
+        Result<Object> result = null;
         Throwable throwable = new Throwable();
         try {
             result = Result.of(() -> { throw throwable; });
@@ -118,7 +104,7 @@ public class ResultTest {
 
     @Test
     public void ofReturnsEmptyCorrectly() {
-        Result<Object, Throwable> result = Result.of(() -> null);
+        Result<Object> result = Result.of(() -> null);
 
         assertTrue(result.isAccepted());
         assertTrue(result.isEmpty());
@@ -128,7 +114,7 @@ public class ResultTest {
     @Test
     public void ofReturnsAcceptedCorrectly() {
         Object o = new Object();
-        Result<Object, Throwable> result = Result.of(() -> o);
+        Result<Object> result = Result.of(() -> o);
 
         assertTrue(result.isAccepted());
         assertTrue(result.isPresent());
@@ -150,20 +136,20 @@ public class ResultTest {
     @Test
     public void safeCastAcceptsValidCast() {
         String string = "a string";
-        Result<CharSequence, ClassCastException> result = Result.safeCast(string, CharSequence.class);
+        Result<CharSequence> result = Result.safeCast(string, CharSequence.class);
         assertSame(result.get(), string);
     }
 
     @Test
     public void safeCastRejectsInvalidCast() {
         Object object = new Object();
-        Result<CharSequence, ClassCastException> result = Result.safeCast(object, CharSequence.class);
+        Result<CharSequence> result = Result.safeCast(object, CharSequence.class);
         assertEquals(result.getException().getClass(), ClassCastException.class);
     }
 
     @Test
     public void safeCastAcceptsNull() {
-        Result<CharSequence, ClassCastException> result = Result.safeCast(null, CharSequence.class);
+        Result<CharSequence> result = Result.safeCast(null, CharSequence.class);
         assertNull(result.get());
     }
 }
