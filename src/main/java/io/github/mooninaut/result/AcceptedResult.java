@@ -94,14 +94,12 @@ final class AcceptedResult<VAL> implements Result<VAL> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
     Result<OUT> exMap(EF mapper) {
         return ExceptionalFunctionWrapper.wrap(mapper).apply(get());
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
     Result<OUT> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass) {
         return ExceptionalFunctionWrapper.wrapChecked(
@@ -110,7 +108,6 @@ final class AcceptedResult<VAL> implements Result<VAL> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <OUT, F extends Function<? super VAL, ? extends OUT>>
     Result<OUT> map(F mapper) {
         return Result.accept(mapper.apply(get()));
