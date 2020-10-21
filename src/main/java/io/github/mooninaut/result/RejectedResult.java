@@ -22,7 +22,7 @@ import java.util.function.Function;
  * limitations under the License.
  */
 
-final class RejectedResult<VAL> implements Result<VAL> {
+public final class RejectedResult<VAL> extends Result<VAL> {
     ////// Fields //////
     private final Throwable throwable;
 

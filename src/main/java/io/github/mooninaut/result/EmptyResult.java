@@ -22,7 +22,7 @@ import java.util.function.Function;
  * limitations under the License.
  */
 
-final class EmptyResult<VAL> implements Result<VAL> {
+public final class EmptyResult<VAL> extends Result<VAL> {
 
     private enum Self {
         INSTANCE;
