@@ -22,16 +22,11 @@ import java.util.function.Function;
  * limitations under the License.
  */
 
-final class AcceptedResult<VAL> extends Result<VAL> {
-    ////// Fields //////
-    private final VAL value;
-
-    ////// Constructors ///////
-    AcceptedResult(VAL value) {
+final record AcceptedResult<VAL>(VAL value) implements Result<VAL> {
+    AcceptedResult {
         if (value == null) {
             throw new NullPointerException("AcceptedResult does not allow null values");
         }
-        this.value = value;
     }
 
     ////// Public methods ///////
@@ -63,14 +58,14 @@ final class AcceptedResult<VAL> extends Result<VAL> {
     @SuppressWarnings("unchecked")
     @Override
     public <OUT> Result<OUT> checkedCast(Class<OUT> type) throws ClassCastException {
-        type.cast(get());
-        return (Result<OUT>) this;
+        type.cast(value);
+        return (Result<OUT>) (Result) this;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <OUT> Result<OUT> uncheckedCast() {
-        return (Result<OUT>) this;
+        return (Result<OUT>) (Result) this;
     }
 
     @Override
@@ -96,7 +91,7 @@ final class AcceptedResult<VAL> extends Result<VAL> {
     @Override
     public <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
     Result<OUT> exMap(EF mapper) {
-        return ExceptionalFunctionWrapper.wrap(mapper).apply(get());
+        return ExceptionalFunctionWrapper.wrap(mapper).apply(value);
     }
 
     @Override
@@ -104,23 +99,23 @@ final class AcceptedResult<VAL> extends Result<VAL> {
     Result<OUT> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass) {
         return ExceptionalFunctionWrapper.wrapChecked(
                 mapper, inClass, outClass
-        ).apply(get());
+        ).apply(value);
     }
 
     @Override
     public <OUT, F extends Function<? super VAL, ? extends OUT>>
     Result<OUT> map(F mapper) {
-        return Result.accept(mapper.apply(get()));
+        return Result.accept(mapper.apply(value));
     }
 
     @Override
     public Optional<VAL> toOptional() throws NullPointerException {
-        return Optional.of(get());
+        return Optional.of(value);
     }
 
     @Override
     public Optional<VAL> toNullableOptional() {
-        return Optional.of(get());
+        return Optional.of(value);
     }
 
     @Override
@@ -137,7 +132,7 @@ final class AcceptedResult<VAL> extends Result<VAL> {
     @Override
     public Result<VAL> ifAccepted(Consumer<? super VAL> consumer) {
         if (isAccepted()) {
-            consumer.accept(get());
+            consumer.accept(value);
         }
         return this;
     }
@@ -153,7 +148,7 @@ final class AcceptedResult<VAL> extends Result<VAL> {
     @Override
     public Result<VAL> then(Consumer<? super VAL> consumer, Consumer<? super Throwable> rejector) {
         if (isAccepted()) {
-            consumer.accept(get());
+            consumer.accept(value);
         } else {
             rejector.accept(getException());
         }
@@ -163,7 +158,7 @@ final class AcceptedResult<VAL> extends Result<VAL> {
     @Override
     public Result<VAL> acceptOrElse(Consumer<? super VAL> consumer, VAL other) {
         if (isAccepted()) {
-            consumer.accept(get());
+            consumer.accept(value);
         } else {
             consumer.accept(other);
         }
@@ -175,7 +170,7 @@ final class AcceptedResult<VAL> extends Result<VAL> {
         if (isRejected()) {
             throw getException();
         }
-        consumer.accept(get());
+        consumer.accept(value);
         return this;
     }
 
@@ -184,14 +179,14 @@ final class AcceptedResult<VAL> extends Result<VAL> {
         if (isRejected()) {
             throw new RuntimeException(getException());
         }
-        consumer.accept(get());
+        consumer.accept(value);
         return this;
     }
 
     @Override
     public Result<VAL> acceptOrPrintStacktrace(Consumer<? super VAL> consumer) {
         if (isAccepted()) {
-            consumer.accept(get());
+            consumer.accept(value);
         } else {
             getException().printStackTrace();
         }

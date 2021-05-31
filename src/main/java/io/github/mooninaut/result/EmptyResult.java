@@ -22,7 +22,7 @@ import java.util.function.Function;
  * limitations under the License.
  */
 
-public final class EmptyResult<VAL> extends Result<VAL> {
+final record EmptyResult<VAL>() implements Result<VAL> {
 
     private enum Self {
         INSTANCE;
@@ -31,12 +31,10 @@ public final class EmptyResult<VAL> extends Result<VAL> {
 
         @SuppressWarnings("unchecked")
         public static <VAL> Result<VAL> getInstance() {
-            return (Result<VAL>) INSTANCE.value;
+            return (Result<VAL>) (Result) INSTANCE.value;
         }
     }
     private static final int HASH_CODE = Objects.hash(EmptyResult.class, null);
-
-    private EmptyResult() { }
 
     public static <VAL> Result<VAL> getInstance() {
         return Self.getInstance();
@@ -67,16 +65,16 @@ public final class EmptyResult<VAL> extends Result<VAL> {
         return Optional.empty();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     @Override
     public <OUT> Result<OUT> checkedCast(Class<OUT> type) {
-        return (Result<OUT>) this;
+        return (Result<OUT>) (Result) this;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     @Override
     public <OUT> Result<OUT> uncheckedCast() {
-        return (Result<OUT>) this;
+        return (Result<OUT>) (Result) this;
     }
 
     @Override
@@ -91,7 +89,7 @@ public final class EmptyResult<VAL> extends Result<VAL> {
 
     @Override
     public VAL orElse(VAL other) {
-        return other;
+        return null;
     }
 
     @Override
@@ -99,7 +97,6 @@ public final class EmptyResult<VAL> extends Result<VAL> {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
     Result<OUT> exMap(
@@ -107,12 +104,11 @@ public final class EmptyResult<VAL> extends Result<VAL> {
         return ExceptionalFunctionWrapper.wrap(mapper).apply(null);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
     Result<OUT> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass) {
-        return (Result<OUT>) ExceptionalFunctionWrapper
-                .wrapChecked(mapper, inClass, outClass);
+        return ExceptionalFunctionWrapper
+                .wrapChecked(mapper, inClass, outClass).apply(null);
     }
 
     @Override
@@ -180,22 +176,5 @@ public final class EmptyResult<VAL> extends Result<VAL> {
     public Result<VAL> acceptOrPrintStacktrace(Consumer<? super VAL> consumer) {
         consumer.accept(null);
         return this;
-    }
-
-    // Object method overrides
-
-    @Override
-    public int hashCode() {
-        return HASH_CODE;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-
-    @Override
-    public String toString() {
-        return super.toString();
     }
 }

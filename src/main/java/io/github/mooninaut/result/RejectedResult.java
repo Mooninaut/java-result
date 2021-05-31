@@ -22,14 +22,14 @@ import java.util.function.Function;
  * limitations under the License.
  */
 
-public final class RejectedResult<VAL> extends Result<VAL> {
-    ////// Fields //////
-    private final Throwable throwable;
+final record RejectedResult<VAL>(Throwable throwable) implements Result<VAL> {
 
     ////// Constructor ///////
 
-    RejectedResult(Throwable throwable) {
-        this.throwable = throwable;
+    public RejectedResult {
+        if (throwable == null) {
+            throw new NullPointerException("throwable must not be null");
+        }
     }
 
     ////// Public methods ///////
@@ -61,13 +61,13 @@ public final class RejectedResult<VAL> extends Result<VAL> {
     @SuppressWarnings("unchecked")
     @Override
     public <OUT> Result<OUT> checkedCast(Class<OUT> type) {
-        return (Result<OUT>) this;
+        return (Result<OUT>) (Result) this;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <OUT> Result<OUT> uncheckedCast() {
-        return (Result<OUT>) this;
+        return (Result<OUT>) (Result) this;
     }
 
     @Override
@@ -91,24 +91,24 @@ public final class RejectedResult<VAL> extends Result<VAL> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
     Result<OUT> exMap(EF mapper) {
-        return (Result<OUT>) this;
+        return (Result<OUT>)(Result) this;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public <OUT, EF extends ExceptionalFunction<? super VAL, ? extends OUT>>
     Result<OUT> exMapChecked(EF mapper, Class<VAL> inClass, Class<OUT> outClass) {
-        return (Result<OUT>) this;
+        return (Result<OUT>)(Result) this;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public <OUT, F extends Function<? super VAL, ? extends OUT>>
     Result<OUT> map(F mapper) {
-        return (Result<OUT>) this;
+        return (Result<OUT>)(Result) this;
     }
 
     @Override
